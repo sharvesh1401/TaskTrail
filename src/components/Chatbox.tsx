@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, X } from 'lucide-react';
 import TrailGuideIcon from './TrailGuideIcon';
@@ -47,6 +46,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         headers: {
           'Authorization': 'Bearer sk-744d64e9a996410da9b03c7c79b66d8f',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           model: 'deepseek-chat',
@@ -66,14 +66,20 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response from DeepSeek');
+        const errorText = await response.text();
+        console.error('DeepSeek API response:', response.status, response.statusText, errorText);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response format from DeepSeek API');
+      }
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.choices?.[0]?.message?.content || 'Sorry, I couldn\'t process your request.',
+        text: data.choices[0].message.content || 'Sorry, I couldn\'t process your request.',
         isUser: false,
         timestamp: new Date(),
       };
@@ -81,9 +87,24 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('DeepSeek API error:', error);
+      
+      let errorText = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('CORS')) {
+          errorText = 'Unable to connect due to browser security restrictions. This feature may need to be implemented with a backend server.';
+        } else if (error.message.includes('401')) {
+          errorText = 'Authentication failed. Please check the API key configuration.';
+        } else if (error.message.includes('429')) {
+          errorText = 'Rate limit exceeded. Please wait a moment before trying again.';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorText = 'Network error. Please check your internet connection and try again.';
+        }
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Sorry, I\'m having trouble connecting right now. Please try again later.',
+        text: errorText,
         isUser: false,
         timestamp: new Date(),
       };
