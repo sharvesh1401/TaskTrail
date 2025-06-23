@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Star, CheckCircle, Target } from 'lucide-react';
+import { CheckCircle, Target } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 export default function WelcomeModal() {
@@ -75,10 +75,6 @@ export default function WelcomeModal() {
             <div className="flex items-center gap-3">
               <Target className="w-5 h-5 text-accent flex-shrink-0" />
               <span>Set goals and importance levels for better focus</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Star className="w-5 h-5 text-accent flex-shrink-0" />
-              <span>Celebrate achievements with rewards and animations</span>
             </div>
           </div>
 
