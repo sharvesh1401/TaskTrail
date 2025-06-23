@@ -24,5 +24,9 @@ TaskTrail is a beautifully minimal, dark-themed to-do app that doesn't just help
 - 💾 Fully local—everything is stored on your device (with optional API calls)
 - 📱 Fully responsive and mobile-first
 
+## Future Enhancements
+
+In future enhancements, features like account creation, cross-device sync, and personalized analytics will be added to elevate the TaskTrail experience. These updates will ensure users can track their progress seamlessly across platforms with even deeper insights and customization.
+
 
 
