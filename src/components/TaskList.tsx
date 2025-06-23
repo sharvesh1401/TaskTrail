@@ -10,7 +10,7 @@ interface TaskListProps {
 
 export default function TaskList({ onEditTask, onTaskComplete }: TaskListProps) {
   const { state, dispatch } = useApp();
-  const { tasks, filter } = state;
+  const { tasks, filterOptions } = state;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -52,18 +52,18 @@ export default function TaskList({ onEditTask, onTaskComplete }: TaskListProps) 
   };
 
   const filteredTasks = tasks.filter(task => {
-    if (filter.status === 'pending' && task.completed) return false;
-    if (filter.status === 'completed' && !task.completed) return false;
-    if (filter.importance && task.importance !== filter.importance) return false;
+    if (filterOptions.status === 'pending' && task.completed) return false;
+    if (filterOptions.status === 'completed' && !task.completed) return false;
+    if (filterOptions.importance && task.importance !== filterOptions.importance) return false;
     return true;
   }).sort((a, b) => {
-    if (filter.sortBy === 'deadline') {
+    if (filterOptions.sortBy === 'deadline') {
       if (!a.deadline && !b.deadline) return 0;
       if (!a.deadline) return 1;
       if (!b.deadline) return -1;
       return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
     }
-    if (filter.sortBy === 'importance') {
+    if (filterOptions.sortBy === 'importance') {
       const importanceOrder = { 'all-out': 0, 'focused': 1, 'steady': 2, 'chill': 3 };
       return importanceOrder[a.importance] - importanceOrder[b.importance];
     }
