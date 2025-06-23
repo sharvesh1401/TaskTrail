@@ -42,25 +42,38 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/deepseek', {
+      const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
+          'Authorization': 'Bearer sk-744d64e9a996410da9b03c7c79b66d8f',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: inputText,
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are TrailGuide, a helpful AI productivity assistant. Be friendly, concise, and focus on helping users with task management, goal setting, and productivity tips.'
+            },
+            {
+              role: 'user',
+              content: inputText
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 1000,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        throw new Error('Failed to get response from DeepSeek');
       }
 
       const data = await response.json();
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.response || 'Sorry, I couldn\'t process your request.',
+        text: data.choices?.[0]?.message?.content || 'Sorry, I couldn\'t process your request.',
         isUser: false,
         timestamp: new Date(),
       };
@@ -90,7 +103,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
   if (!isOpen) return null;
 
   return (
-    <div className={`fixed bottom-6 left-6 chatbox z-50 flex flex-col animate-slide-up max-w-96 w-[90vw] max-h-[60vh] md:max-h-[60vh]`}>
+    <div className={`fixed bottom-6 left-6 chatbox-imessage z-50 flex flex-col animate-slide-up max-w-96 w-[90vw] max-h-[60vh] md:max-h-[60vh]`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-default">
         <div className="flex items-center gap-3">
@@ -111,7 +124,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
         {messages.length === 0 && (
           <div className="text-center text-muted py-8">
             <TrailGuideIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -123,13 +136,13 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex animate-fade-scale ${message.isUser ? 'justify-end' : 'justify-start'}`}
+            className={`flex animate-imessage-bubble ${message.isUser ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-xs px-3 py-2 rounded-2xl text-sm ${
+              className={`max-w-[80%] px-4 py-2 text-sm leading-relaxed ${
                 message.isUser
-                  ? 'chat-user text-primary'
-                  : 'chat-trailguide text-white'
+                  ? 'imessage-user-bubble text-white'
+                  : 'imessage-ai-bubble text-primary'
               }`}
             >
               {message.text}
@@ -138,12 +151,12 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         ))}
         
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="chat-trailguide px-3 py-2 rounded-2xl">
+          <div className="flex justify-start animate-imessage-bubble">
+            <div className="imessage-ai-bubble px-4 py-3">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </div>
@@ -153,21 +166,21 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       </div>
 
       {/* Input */}
-      <div className="chat-input-container p-4">
-        <div className="flex gap-2">
+      <div className="imessage-input-container p-4">
+        <div className="flex gap-2 items-end">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask TrailGuide anything..."
-            className="flex-1 bg-surface-card border-0 rounded-lg px-3 py-2 text-sm text-primary placeholder-muted resize-none focus:outline-none focus:ring-2 focus:ring-accent"
+            placeholder="Message TrailGuide..."
+            className="flex-1 bg-surface-card border border-default rounded-full px-4 py-2 text-sm text-primary placeholder-muted resize-none focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
             disabled={isLoading}
           />
           <button
             onClick={sendMessage}
             disabled={!inputText.trim() || isLoading}
-            className="bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-all duration-150 hover:scale-105"
+            className="bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-all duration-150 hover:scale-105"
           >
             <Send className="w-4 h-4" />
           </button>
