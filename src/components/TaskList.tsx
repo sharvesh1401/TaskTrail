@@ -1,105 +1,80 @@
-
-import React, { useState } from 'react';
-import { Edit2, Trash2, Calendar, Target, CheckCircle2, Circle, AlertTriangle } from 'lucide-react';
-import { Task } from '../types';
+import React from 'react';
+import { Calendar, Clock, Edit2, Trash2 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { Task } from '../types';
 
 interface TaskListProps {
   onEditTask: (task: Task) => void;
+  onTaskComplete: () => void;
 }
 
-export default function TaskList({ onEditTask }: TaskListProps) {
+export default function TaskList({ onEditTask, onTaskComplete }: TaskListProps) {
   const { state, dispatch } = useApp();
-  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const { tasks, filter } = state;
 
-  const filteredTasks = state.tasks.filter((task) => {
-    const { status, importance, deadline } = state.filterOptions;
-    
-    // Status filter
-    if (status === 'active' && task.completed) return false;
-    if (status === 'completed' && !task.completed) return false;
-    
-    // Importance filter
-    if (importance !== 'all' && task.importance !== importance) return false;
-    
-    // Deadline filter
-    if (deadline !== 'all' && task.deadline) {
-      const taskDeadline = new Date(task.deadline);
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-      
-      if (deadline === 'overdue' && taskDeadline >= now) return false;
-      if (deadline === 'today' && (taskDeadline < today || taskDeadline >= tomorrow)) return false;
-      if (deadline === 'upcoming' && taskDeadline <= now) return false;
-    } else if (deadline !== 'all' && !task.deadline) {
-      return false;
-    }
-    
-    return true;
-  });
-
-  const handleToggleTask = async (taskId: string) => {
-    setCompletingTaskId(taskId);
-    
-    // Small delay for animation
-    setTimeout(() => {
-      dispatch({ type: 'TOGGLE_TASK', id: taskId });
-      setCompletingTaskId(null);
-    }, 200);
-  };
-
-  const handleDeleteTask = (taskId: string) => {
-    dispatch({ type: 'DELETE_TASK', id: taskId });
-  };
-
-  const isOverdue = (deadline: string) => {
-    return new Date(deadline) < new Date();
-  };
-
-  const formatDeadline = (deadline: string) => {
-    const date = new Date(deadline);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
     const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diff = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diff / (1000 * 3600 * 24));
+
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+  };
+
+  const isOverdue = (task: Task) => {
+    if (!task.deadline) return false;
+    return new Date(task.deadline).getTime() < new Date().getTime();
+  };
+
+  const toggleTask = (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (task && !task.completed) {
+      onTaskComplete();
+    }
     
-    if (diffDays < 0) return 'Overdue';
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    return `${diffDays} days`;
+    dispatch({
+      type: 'TOGGLE_TASK',
+      id,
+    });
   };
 
-  const getImportanceColor = (importance: string) => {
-    switch (importance) {
-      case 'All-Out': return 'text-error border-error/20 bg-error/5';
-      case 'Focused': return 'text-warning border-warning/20 bg-warning/5';
-      case 'Steady': return 'text-success border-success/20 bg-success/5';
-      case 'Chill': return 'text-secondary border-secondary/20 bg-secondary/5';
-      default: return 'text-muted border-border bg-surface';
-    }
+  const deleteTask = (id: string) => {
+    dispatch({
+      type: 'DELETE_TASK',
+      id,
+    });
   };
 
-  const getImportanceIcon = (importance: string) => {
-    switch (importance) {
-      case 'All-Out': return '🔥';
-      case 'Focused': return '⚡';
-      case 'Steady': return '🎯';
-      case 'Chill': return '😌';
-      default: return '📋';
+  const filteredTasks = tasks.filter(task => {
+    if (filter.status === 'pending' && task.completed) return false;
+    if (filter.status === 'completed' && !task.completed) return false;
+    if (filter.importance && task.importance !== filter.importance) return false;
+    return true;
+  }).sort((a, b) => {
+    if (filter.sortBy === 'deadline') {
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
     }
-  };
+    if (filter.sortBy === 'importance') {
+      const importanceOrder = { 'all-out': 0, 'focused': 1, 'steady': 2, 'chill': 3 };
+      return importanceOrder[a.importance] - importanceOrder[b.importance];
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   if (filteredTasks.length === 0) {
     return (
-      <div className="text-center py-12 animate-fade-in">
-        <div className="text-6xl mb-4">🎯</div>
-        <h3 className="text-lg font-medium mb-2">No tasks found</h3>
-        <p className="text-muted">
-          {state.tasks.length === 0 
-            ? "Create your first task to start building your streak!" 
-            : "Try adjusting your filters or create a new task."
-          }
-        </p>
+      <div className="text-center py-12 text-muted">
+        <p className="text-lg mb-2">No tasks yet</p>
+        <p className="text-sm">Add your first task to get started!</p>
       </div>
     );
   }
@@ -109,77 +84,78 @@ export default function TaskList({ onEditTask }: TaskListProps) {
       {filteredTasks.map((task) => (
         <div
           key={task.id}
-          className={`bg-surface-card border border-default rounded-xl p-4 transition-all duration-200 hover:bg-surface-elevated hover-scale ${
-            task.completed ? 'opacity-60' : ''
-          } ${completingTaskId === task.id ? 'animate-pop-in' : ''}`}
+          className={`bg-surface-card rounded-lg p-4 transition-all duration-200 hover:bg-surface-elevated hover-scale ${
+            task.completed ? 'opacity-75' : ''
+          }`}
         >
           <div className="flex items-start gap-3">
             <button
-              onClick={() => handleToggleTask(task.id)}
-              className="mt-0.5 transition-colors hover:scale-110 transform duration-150"
+              onClick={() => toggleTask(task.id)}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${
+                task.completed
+                  ? 'bg-success border-success'
+                  : 'border-default hover:border-primary'
+              }`}
             >
-              {task.completed ? (
-                <CheckCircle2 className="w-5 h-5 text-success" />
-              ) : (
-                <Circle className="w-5 h-5 text-muted hover:text-primary" />
+              {task.completed && (
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               )}
             </button>
-            
+
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <h3 className={`font-medium leading-tight ${
-                  task.completed ? 'line-through text-muted' : ''
-                }`}>
-                  {task.title}
-                </h3>
-                
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <button
-                    onClick={() => onEditTask(task)}
-                    className="p-1 hover:bg-surface rounded transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4 text-muted hover:text-primary" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task.id)}
-                    className="p-1 hover:bg-surface rounded transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4 text-muted hover:text-error" />
-                  </button>
-                </div>
-              </div>
-              
-              {task.description && (
-                <p className="text-sm text-secondary mb-2 leading-relaxed">
-                  {task.description}
-                </p>
-              )}
+              <h3 className={`font-medium ${task.completed ? 'line-through text-muted' : 'text-primary'}`}>
+                {task.title}
+              </h3>
               
               {task.goal && (
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-accent" />
-                  <span className="text-sm text-secondary">{task.goal}</span>
-                </div>
+                <p className={`text-sm mt-1 ${task.completed ? 'text-muted' : 'text-secondary'}`}>
+                  Goal: {task.goal}
+                </p>
               )}
-              
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border ${getImportanceColor(task.importance)}`}>
-                  <span>{getImportanceIcon(task.importance)}</span>
-                  {task.importance}
-                </span>
-                
+
+              <div className="flex items-center gap-4 mt-2 text-xs text-muted">
+                <div className={`flex items-center gap-1 importance-${task.importance}`}>
+                  <div className="w-2 h-2 rounded-full bg-current"></div>
+                  <span className="capitalize">{task.importance.replace('-', ' ')}</span>
+                </div>
+
                 {task.deadline && (
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full border ${
-                    isOverdue(task.deadline)
-                      ? 'text-error border-error/20 bg-error/5'
-                      : 'text-secondary border-border bg-surface'
-                  }`}>
-                    {isOverdue(task.deadline) && <AlertTriangle className="w-3 h-3" />}
+                  <div className={`flex items-center gap-1 ${isOverdue(task) ? 'text-error' : ''}`}>
                     <Calendar className="w-3 h-3" />
-                    {formatDeadline(task.deadline)}
-                  </span>
+                    <span>{formatDate(task.deadline)}</span>
+                    {isOverdue(task) && <span className="text-error font-medium">Overdue</span>}
+                  </div>
                 )}
+
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{formatDate(task.createdAt)}</span>
+                </div>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onEditTask(task)}
+                className="p-1 hover:bg-surface-elevated rounded transition-colors"
+                aria-label="Edit task"
+              >
+                <Edit2 className="w-4 h-4 text-muted hover:text-primary" />
+              </button>
+              
+              <button
+                onClick={() => deleteTask(task.id)}
+                className="p-1 hover:bg-surface-elevated rounded transition-colors"
+                aria-label="Delete task"
+              >
+                <Trash2 className="w-4 h-4 text-muted hover:text-error" />
+              </button>
             </div>
           </div>
         </div>

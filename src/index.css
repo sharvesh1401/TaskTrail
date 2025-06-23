@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,7 +20,8 @@
     --primary: 258 90% 66%;
     --primary-hover: 258 90% 60%;
     --secondary: 200 95% 45%;
-    --accent: 45 95% 55%;
+    --accent: 258 90% 66%;
+    --accent-hover: 258 90% 70%;
     
     /* Status colors */
     --success: 142 76% 36%;
@@ -35,6 +37,19 @@
     /* Particles */
     --particle-color: 258 90% 66%;
     --particle-opacity: 0.1;
+    
+    /* TrailGuide Chat Colors */
+    --chat-bg: #272946;
+    --chat-user-bg: #1F204A;
+    --chat-accent-bg: 258 90% 66%;
+    --chat-input-bg: #1A1C3B;
+    --chat-radius: 12px;
+    --chat-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    
+    /* Calendar colors */
+    --calendar-streak: 142 76% 36%;
+    --calendar-empty: 218 20% 12%;
+    --calendar-today: 45 95% 55%;
     
     --radius: 0.75rem;
   }
@@ -93,6 +108,39 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes fadeScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDownOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
   }
 }
 
@@ -193,6 +241,18 @@
   animation: scaleIn 0.3s ease-out;
 }
 
+.animate-fade-scale {
+  animation: fadeScale 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-slide-down-out {
+  animation: slideDownOut 0.3s ease-out;
+}
+
 .animate-pop-in {
   animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
@@ -252,6 +312,10 @@
 
 .bg-accent {
   background-color: hsl(var(--accent));
+}
+
+.bg-accent-hover {
+  background-color: hsl(var(--accent-hover));
 }
 
 .bg-success {
@@ -325,6 +389,26 @@
   border-color: hsl(var(--chill));
 }
 
+/* TrailGuide Chat Styles */
+.chatbox {
+  background: var(--chat-bg);
+  border-radius: var(--chat-radius);
+  box-shadow: var(--chat-shadow);
+}
+
+.chat-user {
+  background: var(--chat-user-bg);
+}
+
+.chat-trailguide {
+  background: hsl(var(--chat-accent-bg));
+}
+
+.chat-input-container {
+  background: var(--chat-input-bg);
+  border-radius: 0 0 var(--chat-radius) var(--chat-radius);
+}
+
 /* Hover effects */
 .hover-scale {
   transition: transform 150ms ease;
@@ -344,9 +428,10 @@
   background-color: hsla(var(--surface-elevated), 0.8);
 }
 
-/* Calendar colors */
-:root {
-  --calendar-streak: var(--success);
-  --calendar-empty: var(--surface);
-  --calendar-today: var(--accent);
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .chatbox {
+    width: calc(100vw - 32px);
+    max-height: 50vh;
+  }
 }
