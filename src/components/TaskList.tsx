@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, Clock, Edit2, Trash2 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
@@ -52,21 +53,30 @@ export default function TaskList({ onEditTask, onTaskComplete }: TaskListProps) 
   };
 
   const filteredTasks = tasks.filter(task => {
-    if (filterOptions.status === 'pending' && task.completed) return false;
+    if (filterOptions.status === 'active' && task.completed) return false;
     if (filterOptions.status === 'completed' && !task.completed) return false;
-    if (filterOptions.importance && task.importance !== filterOptions.importance) return false;
+    if (filterOptions.importance !== 'all' && task.importance !== filterOptions.importance) return false;
+    
+    // Filter by deadline
+    if (filterOptions.deadline !== 'all') {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      if (filterOptions.deadline === 'overdue') {
+        if (!task.deadline || new Date(task.deadline) >= today) return false;
+      } else if (filterOptions.deadline === 'today') {
+        if (!task.deadline) return false;
+        const taskDate = new Date(task.deadline);
+        const taskDay = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+        if (taskDay.getTime() !== today.getTime()) return false;
+      } else if (filterOptions.deadline === 'upcoming') {
+        if (!task.deadline || new Date(task.deadline) <= today) return false;
+      }
+    }
+    
     return true;
   }).sort((a, b) => {
-    if (filterOptions.sortBy === 'deadline') {
-      if (!a.deadline && !b.deadline) return 0;
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    }
-    if (filterOptions.sortBy === 'importance') {
-      const importanceOrder = { 'all-out': 0, 'focused': 1, 'steady': 2, 'chill': 3 };
-      return importanceOrder[a.importance] - importanceOrder[b.importance];
-    }
+    // Default sort by creation date (newest first)
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
