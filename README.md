@@ -24,19 +24,5 @@ TaskTrail is a beautifully minimal, dark-themed to-do app that doesn't just help
 - 💾 Fully local—everything is stored on your device (with optional API calls)
 - 📱 Fully responsive and mobile-first
 
----
 
-## 📸 Preview
-
-![App Preview]("C:\Users\5h4rv\OneDrive\Pictures\Screenshots\Screenshot 2025-06-23 140411.png")
-
----
-
-## 🔧 Getting Started
-
-```bash
-git clone https://github.com/sharvesh1401/TaskTrail.git
-cd TaskTrail
-npm install
-npm run dev
 
