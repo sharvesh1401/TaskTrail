@@ -40,7 +40,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     setIsLoading(true);
 
     try {
-      // Use Groq API instead of DeepSeek
+      // Secure API call to backend endpoint
       const response = await fetch('/api/groq', {
         method: 'POST',
         headers: {
@@ -98,18 +98,23 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     }
   };
 
+  const handleSendClick = () => {
+    sendMessage();
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 chatbox-imessage z-50 flex flex-col animate-slide-up max-w-96 w-[90vw] max-h-[60vh] md:max-h-[60vh]">
+    <div className="chatbox-container">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-default">
+      <div className="flex items-center justify-between p-4 border-b border-default bg-var(--chat-bg)">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-accent-primary rounded-full flex items-center justify-center">
             <img 
               src="/src/assets/assistant-logo.svg" 
               alt="TrailGuide" 
               className="w-5 h-5"
+              title="TrailGuide AI Assistant"
             />
           </div>
           <div>
@@ -120,12 +125,13 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         <button
           onClick={onClose}
           className="p-1 hover:bg-surface-card rounded-full transition-colors"
+          aria-label="Close chat"
         >
           <X className="w-5 h-5 text-muted" />
         </button>
       </div>
 
-      {/* Messages */}
+      {/* Messages Container */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
         {messages.length === 0 && (
           <div className="text-center text-muted py-8">
@@ -142,14 +148,15 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex animate-imessage-bubble ${message.isUser ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] px-4 py-2 text-sm leading-relaxed ${
+              className={`max-w-[80%] ${
                 message.isUser
-                  ? 'imessage-user-bubble text-white'
-                  : 'imessage-ai-bubble text-primary'
+                  ? 'bubble-user animate-user-pop'
+                  : 'bubble-trailguide animate-msg-in'
               }`}
+              aria-label={message.isUser ? "Your Message" : "Message from TrailGuide"}
             >
               {message.text}
             </div>
@@ -157,12 +164,12 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         ))}
         
         {isLoading && (
-          <div className="flex justify-start animate-imessage-bubble">
-            <div className="imessage-ai-bubble px-4 py-3">
+          <div className="flex justify-start">
+            <div className="bubble-trailguide animate-msg-in">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-typing-dot"></div>
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-typing-dot" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-white/60 rounded-full animate-typing-dot" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </div>
@@ -171,22 +178,26 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="imessage-input-container p-4">
+      {/* Input Container */}
+      <div className="chat-input-container">
+        <label htmlFor="chat-input" className="sr-only">Type a message</label>
         <div className="flex gap-2 items-end">
           <input
+            id="chat-input"
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Message TrailGuide..."
-            className="flex-1 bg-surface-card border border-default rounded-full px-4 py-2 text-sm text-primary placeholder-muted resize-none focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-all"
+            aria-placeholder="Type your message here"
+            className="chat-input"
             disabled={isLoading}
           />
           <button
-            onClick={sendMessage}
+            onClick={handleSendClick}
             disabled={!inputText.trim() || isLoading}
-            className="bg-accent-primary hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-all duration-150 hover:scale-105"
+            className="send-button"
+            aria-label="Send message"
           >
             <Send className="w-4 h-4" />
           </button>
