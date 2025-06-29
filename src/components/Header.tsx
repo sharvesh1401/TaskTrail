@@ -1,12 +1,17 @@
-
-import React from 'react';
-import { Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Settings, Filter, Menu, X } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { GreetingType } from '../types';
 
-export default function Header() {
+interface HeaderProps {
+  onSettingsClick: () => void;
+  onFilterClick: () => void;
+}
+
+export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) {
   const { state } = useApp();
   const { userData } = state;
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const getGreeting = (): { text: string; type: GreetingType } => {
     const hour = new Date().getHours();
@@ -26,41 +31,106 @@ export default function Header() {
   const greeting = getGreeting();
   const isStreakAchieved = userData.currentStreak >= userData.streakGoal;
 
+  const handleMyStreakClick = () => {
+    // Could open streak details modal
+    console.log('My Streak clicked');
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-surface-elevated border-b border-default backdrop-blur-sm">
-      <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className={`text-2xl font-bold flex items-center gap-2 ${isStreakAchieved ? 'animate-gold-pulse' : ''}`}>
-            <span className="text-primary">Task</span>
-            <span className="text-accent">Trail</span>
-          </div>
-          <div className="hidden sm:block">
-            <p className="text-secondary text-sm animate-slide-down">
-              {greeting.text}
-            </p>
-          </div>
+    <header className="sticky top-0 bg-bg-panel h-16 flex items-center justify-between px-4 z-10">
+      <div className="flex items-center">
+        <img 
+          src="/src/assets/tasktrail-logo.svg" 
+          alt="TaskTrail Logo" 
+          className="w-8 h-8"
+        />
+        <div className="ml-4 text-2xl font-semibold text-text-primary animate-slide-down sm:block hidden">
+          {greeting.text}
         </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-surface-card px-3 py-1.5 rounded-full">
-            <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-accent fill-current" />
-              <span className="text-sm font-medium">{userData.totalStars}</span>
-            </div>
-            <div className="w-px h-4 bg-border"></div>
-            <div className="text-sm">
-              <span className="text-accent font-medium">{userData.currentStreak}</span>
-              <span className="text-muted">/{userData.streakGoal}</span>
-            </div>
-          </div>
+        <div className="ml-4 text-base font-semibold text-text-primary animate-slide-down mobile-greeting sm:hidden block">
+          {greeting.text}
         </div>
       </div>
       
-      <div className="sm:hidden px-4 pb-2">
-        <p className="text-secondary text-sm animate-slide-down">
-          {greeting.text}
-        </p>
+      {/* Desktop Controls */}
+      <div className="hidden sm:flex items-center gap-4">
+        <button
+          onClick={handleMyStreakClick}
+          className="text-text-muted hover:text-accent-primary transition-colors mobile-button-text"
+        >
+          My Streak
+        </button>
+        
+        <button
+          onClick={onFilterClick}
+          className="p-2 bg-white/10 rounded-full hover:bg-white/20 hover:scale-105 transition ease-accel duration-fast"
+          aria-label="Filter & Sort"
+        >
+          <Filter className="w-5 h-5" />
+        </button>
+        
+        <button
+          onClick={onSettingsClick}
+          className="p-2 bg-white/10 rounded-full hover:bg-white/20 hover:scale-105 transition ease-accel duration-fast"
+          aria-label="Settings"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
       </div>
+
+      {/* Mobile Menu Button */}
+      <div className="sm:hidden">
+        <button
+          onClick={() => setShowMobileMenu(!showMobileMenu)}
+          className="p-2 bg-white/10 rounded-full hover:bg-white/20 hover:scale-105 transition ease-accel duration-fast"
+          aria-label="Menu"
+        >
+          {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {showMobileMenu && (
+        <div className="absolute top-16 right-4 bg-bg-panel border border-default rounded-lg shadow-lg z-20 sm:hidden animate-slide-up">
+          <div className="py-2">
+            <button
+              onClick={() => {
+                handleMyStreakClick();
+                setShowMobileMenu(false);
+              }}
+              className="w-full px-4 py-3 text-left text-text-muted hover:text-accent-primary hover:bg-white/10 transition-colors mobile-button-text"
+            >
+              My Streak
+            </button>
+            <button
+              onClick={() => {
+                onFilterClick();
+                setShowMobileMenu(false);
+              }}
+              className="w-full px-4 py-3 text-left text-text-muted hover:text-accent-primary hover:bg-white/10 transition-colors mobile-button-text"
+            >
+              Filter & Sort
+            </button>
+            <button
+              onClick={() => {
+                onSettingsClick();
+                setShowMobileMenu(false);
+              }}
+              className="w-full px-4 py-3 text-left text-text-muted hover:text-accent-primary hover:bg-white/10 transition-colors mobile-button-text"
+            >
+              Settings
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div
+          className="fixed inset-0 z-10 sm:hidden"
+          onClick={() => setShowMobileMenu(false)}
+        />
+      )}
     </header>
   );
 }

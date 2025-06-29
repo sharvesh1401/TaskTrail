@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,6 +7,7 @@
   :root {
     /* Dark theme colors */
     --background: 218 25% 8%;
+    --bg-panel: 218 18% 16%;
     --surface: 218 20% 12%;
     --surface-elevated: 218 18% 16%;
     --surface-card: 218 15% 18%;
@@ -20,8 +20,14 @@
     --primary: 258 90% 66%;
     --primary-hover: 258 90% 60%;
     --secondary: 200 95% 45%;
-    --accent: 258 90% 66%;
+    --accent-primary: 258 90% 66%;
     --accent-hover: 258 90% 70%;
+    --accent-active: 258 90% 55%;
+    
+    /* Task colors */
+    --task-pending: 218 15% 18%;
+    --task-hover: 218 15% 22%;
+    --task-completed: 142 76% 36%;
     
     /* Status colors */
     --success: 142 76% 36%;
@@ -34,9 +40,18 @@
     --steady: 142 69% 58%;
     --chill: 200 95% 45%;
     
+    /* Animation durations */
+    --duration-fast: 150ms;
+    --duration-default: 300ms;
+    --duration-slow: 500ms;
+    
+    /* Easing */
+    --ease-accel: cubic-bezier(0.4, 0, 1, 1);
+    --ease-decel: cubic-bezier(0, 0, 0.2, 1);
+    
     /* Particles */
     --particle-color: 258 90% 66%;
-    --particle-opacity: 0.1;
+    --particle-opacity: 0.05;
     
     /* TrailGuide Chat Colors */
     --chat-bg: #272946;
@@ -163,6 +178,18 @@
   }
 }
 
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -174,10 +201,10 @@
 
 @keyframes goldPulse {
   0%, 100% {
-    filter: drop-shadow(0 0 10px hsl(var(--accent)));
+    filter: drop-shadow(0 0 10px hsl(var(--accent-primary)));
   }
   50% {
-    filter: drop-shadow(0 0 20px hsl(var(--accent))) drop-shadow(0 0 30px hsl(var(--accent)));
+    filter: drop-shadow(0 0 20px hsl(var(--accent-primary))) drop-shadow(0 0 30px hsl(var(--accent-primary)));
   }
 }
 
@@ -261,31 +288,35 @@
 
 /* Utility classes */
 .animate-slide-down {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown var(--duration-default) ease-out;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn var(--duration-default) ease-out;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
+  animation: scaleIn var(--duration-default) ease-out;
 }
 
 .animate-fade-scale {
-  animation: fadeScale 0.3s ease-out;
+  animation: fadeScale var(--duration-default) ease-out;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp var(--duration-default) ease-out;
 }
 
 .animate-slide-down-out {
-  animation: slideDownOut 0.3s ease-out;
+  animation: slideDownOut var(--duration-default) ease-out;
 }
 
 .animate-pop-in {
   animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-pop {
+  animation: pop var(--duration-fast) var(--ease-accel);
 }
 
 .animate-pulse-custom {
@@ -297,11 +328,11 @@
 }
 
 .animate-slide-in-right {
-  animation: slideInFromRight 0.3s ease-out;
+  animation: slideInFromRight var(--duration-default) ease-out;
 }
 
 .animate-slide-out-right {
-  animation: slideOutToRight 0.3s ease-out;
+  animation: slideOutToRight var(--duration-default) ease-out;
 }
 
 .animate-firework {
@@ -324,6 +355,10 @@
 /* Background colors using CSS variables */
 .bg-background {
   background-color: hsl(var(--background));
+}
+
+.bg-bg-panel {
+  background-color: hsl(var(--bg-panel));
 }
 
 .bg-surface {
@@ -350,12 +385,28 @@
   background-color: hsl(var(--secondary));
 }
 
-.bg-accent {
-  background-color: hsl(var(--accent));
+.bg-accent-primary {
+  background-color: hsl(var(--accent-primary));
 }
 
 .bg-accent-hover {
   background-color: hsl(var(--accent-hover));
+}
+
+.bg-accent-active {
+  background-color: hsl(var(--accent-active));
+}
+
+.bg-task-pending {
+  background-color: hsl(var(--task-pending));
+}
+
+.bg-task-hover {
+  background-color: hsl(var(--task-hover));
+}
+
+.bg-task-completed {
+  background-color: hsl(var(--task-completed));
 }
 
 .bg-success {
@@ -375,16 +426,24 @@
   color: hsl(var(--text-primary));
 }
 
+.text-text-primary {
+  color: hsl(var(--text-primary));
+}
+
 .text-secondary {
   color: hsl(var(--text-secondary));
+}
+
+.text-text-muted {
+  color: hsl(var(--text-muted));
 }
 
 .text-muted {
   color: hsl(var(--text-muted));
 }
 
-.text-accent {
-  color: hsl(var(--accent));
+.text-accent-primary {
+  color: hsl(var(--accent-primary));
 }
 
 .text-success {
@@ -477,7 +536,7 @@
 
 /* Hover effects */
 .hover-scale {
-  transition: transform 150ms ease;
+  transition: transform var(--duration-fast) var(--ease-accel);
 }
 
 .hover-scale:hover {
@@ -497,12 +556,55 @@
 /* Mobile responsive adjustments */
 @media (max-width: 640px) {
   .chatbox-imessage {
-    width: calc(100vw - 32px);
-    max-height: 50vh;
+    width: calc(100% - 32px);
+    height: 50vh;
+    bottom: 16px;
+    left: 16px;
   }
   
   .chatbox {
-    width: calc(100vw - 32px);
-    max-height: 50vh;
+    width: calc(100% - 32px);
+    height: 50vh;
+    bottom: 16px;
+    left: 16px;
   }
+  
+  .mobile-greeting {
+    font-size: 1rem;
+  }
+  
+  .mobile-button-text {
+    font-size: 0.9375rem;
+  }
+  
+  .mobile-task-card {
+    padding: 0.75rem;
+    line-height: 1.4;
+    font-size: 0.875rem;
+  }
+}
+
+/* Transition utilities */
+.transition-colors {
+  transition: color var(--duration-default) var(--ease-decel);
+}
+
+.transition-transform {
+  transition: transform var(--duration-fast) var(--ease-accel);
+}
+
+.duration-fast {
+  transition-duration: var(--duration-fast);
+}
+
+.duration-default {
+  transition-duration: var(--duration-default);
+}
+
+.ease-accel {
+  transition-timing-function: var(--ease-accel);
+}
+
+.ease-decel {
+  transition-timing-function: var(--ease-decel);
 }

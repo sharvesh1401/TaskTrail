@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
@@ -30,12 +29,19 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl font-bold">Settings</h1>
+        <div className="flex items-center gap-2">
+          <img 
+            src="/src/assets/tasktrail-logo.svg" 
+            alt="TaskTrail Logo" 
+            className="w-6 h-6"
+          />
+          <h1 className="text-2xl font-bold">Settings</h1>
+        </div>
       </div>
 
       {/* Auto-delete setting */}
-      <div className="bg-surface-card rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-surface-card rounded-lg">
+        <div className="flex items-center justify-between py-4 px-6">
           <div className="flex-1">
             <h3 className="font-medium text-primary mb-1">
               Auto-delete completed tasks after 48 hours
@@ -49,12 +55,15 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
             onCheckedChange={handleAutoDeleteToggle}
           />
         </div>
-      </div>
-
-      {/* Streak Calendar */}
-      <div className="bg-surface-card rounded-lg p-4">
-        <h3 className="font-medium text-primary mb-4">Streak Calendar</h3>
-        <StreakCalendar />
+        
+        {/* Divider */}
+        <div className="border-t border-white/20"></div>
+        
+        {/* Streak Calendar */}
+        <div className="py-4 px-6">
+          <h3 className="font-medium text-primary mb-4">Streak Calendar</h3>
+          <StreakCalendar />
+        </div>
       </div>
     </div>
   );

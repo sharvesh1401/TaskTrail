@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Clock, Edit2, Trash2 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
@@ -94,11 +93,13 @@ export default function TaskList({ onEditTask, onTaskComplete }: TaskListProps) 
       {filteredTasks.map((task) => (
         <div
           key={task.id}
-          className={`bg-surface-card rounded-lg p-4 transition-all duration-200 hover:bg-surface-elevated hover-scale ${
-            task.completed ? 'opacity-75' : ''
+          className={`flex justify-between items-center w-full rounded-lg p-4 transition-colors duration-default mobile-task-card sm:p-4 ${
+            task.completed 
+              ? 'bg-task-completed animate-pop' 
+              : 'bg-task-pending hover:bg-task-hover'
           }`}
         >
-          <div className="flex items-start gap-3">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => toggleTask(task.id)}
               className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${
@@ -149,24 +150,38 @@ export default function TaskList({ onEditTask, onTaskComplete }: TaskListProps) 
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onEditTask(task)}
-                className="p-1 hover:bg-surface-elevated rounded transition-colors"
-                aria-label="Edit task"
-              >
-                <Edit2 className="w-4 h-4 text-muted hover:text-primary" />
-              </button>
-              
-              <button
-                onClick={() => deleteTask(task.id)}
-                className="p-1 hover:bg-surface-elevated rounded transition-colors"
-                aria-label="Delete task"
-              >
-                <Trash2 className="w-4 h-4 text-muted hover:text-error" />
-              </button>
-            </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={task.importance}
+              onChange={(e) => {
+                const updatedTask = { ...task, importance: e.target.value as any };
+                dispatch({ type: 'UPDATE_TASK', task: updatedTask });
+              }}
+              className="text-xs bg-surface-card border border-default rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="All-Out">🔥 All-Out</option>
+              <option value="Focused">⚡ Focused</option>
+              <option value="Steady">🎯 Steady</option>
+              <option value="Chill">😌 Chill</option>
+            </select>
+            
+            <button
+              onClick={() => onEditTask(task)}
+              className="p-1 hover:bg-surface-elevated rounded transition-colors"
+              aria-label="Edit task"
+            >
+              <Edit2 className="w-4 h-4 text-muted hover:text-primary" />
+            </button>
+            
+            <button
+              onClick={() => deleteTask(task.id)}
+              className="p-1 hover:bg-surface-elevated rounded transition-colors animate-fade-scale"
+              aria-label="Delete task"
+            >
+              <Trash2 className="w-4 h-4 text-muted hover:text-error" />
+            </button>
           </div>
         </div>
       ))}

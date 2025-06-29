@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CheckCircle, Target } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
@@ -26,9 +25,16 @@ export default function WelcomeModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-surface-elevated border border-default rounded-xl p-6 w-full max-w-md animate-scale-in">
         <div className="text-center mb-6">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="text-3xl font-bold text-primary">Task</span>
-            <span className="text-3xl font-bold text-accent">Trail</span>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <img 
+              src="/src/assets/tasktrail-logo.svg" 
+              alt="TaskTrail Logo" 
+              className="w-10 h-10"
+            />
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-bold text-primary">Task</span>
+              <span className="text-3xl font-bold text-accent-primary">Trail</span>
+            </div>
           </div>
           <p className="text-secondary">
             Transform your to-dos into a rewarding habit-building journey
@@ -73,7 +79,7 @@ export default function WelcomeModal() {
               <span>Complete tasks to earn stars and build streaks</span>
             </div>
             <div className="flex items-center gap-3">
-              <Target className="w-5 h-5 text-accent flex-shrink-0" />
+              <Target className="w-5 h-5 text-accent-primary flex-shrink-0" />
               <span>Set goals and importance levels for better focus</span>
             </div>
           </div>

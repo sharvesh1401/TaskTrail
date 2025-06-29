@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 
 interface Particle {
@@ -29,17 +28,19 @@ export default function ParticleBackground() {
     };
 
     const createParticles = () => {
-      const particleCount = Math.min(30, Math.floor((canvas.width * canvas.height) / 15000));
+      // Reduce particles: 10 on mobile, 20 on desktop
+      const isMobile = window.innerWidth < 640;
+      const particleCount = isMobile ? 10 : 20;
       particlesRef.current = [];
 
       for (let i = 0; i < particleCount; i++) {
         particlesRef.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
+          vx: (Math.random() - 0.5) * 0.3, // Reduced speed < 5px/sec
+          vy: (Math.random() - 0.5) * 0.3,
           size: Math.random() * 2 + 1,
-          opacity: Math.random() * 0.1 + 0.05,
+          opacity: 0.05, // Set to 5% opacity
         });
       }
     };
@@ -56,15 +57,15 @@ export default function ParticleBackground() {
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Mouse interaction
+        // Mouse interaction (reduced effect)
         const dx = mouseRef.current.x - particle.x;
         const dy = mouseRef.current.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance < 100) {
           const force = (100 - distance) / 100;
-          particle.vx += (dx / distance) * force * 0.01;
-          particle.vy += (dy / distance) * force * 0.01;
+          particle.vx += (dx / distance) * force * 0.005; // Reduced force
+          particle.vy += (dy / distance) * force * 0.005;
         }
 
         // Damping
