@@ -29,16 +29,10 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
   };
 
   const greeting = getGreeting();
-  const isStreakAchieved = userData.currentStreak >= userData.streakGoal;
-
-  const handleMyStreakClick = () => {
-    // Could open streak details modal
-    console.log('My Streak clicked');
-  };
 
   return (
     <header className="sticky top-0 bg-bg-panel h-16 flex items-center justify-between px-4 z-10">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         {/* Logo */}
         <img 
           src="/src/assets/tasktrail-logo.svg" 
@@ -46,46 +40,17 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
           className="w-8 h-8 mr-2"
         />
         
-        {/* Stars Counter */}
-        <div className="flex items-center gap-1">
-          <img 
-            src="/src/assets/star.svg" 
-            alt="Stars" 
-            className="w-4 h-4"
-          />
-          <span className="text-sm font-medium text-primary">{userData.totalStars}</span>
-        </div>
-        
-        {/* Streak Badge */}
-        <div className="flex items-center gap-1">
-          <div className="relative">
-            <img 
-              src="/src/assets/streak.svg" 
-              alt="Streak" 
-              className="w-4 h-4"
-            />
-          </div>
-          <span className="text-sm font-medium text-primary">{userData.currentStreak}</span>
-        </div>
-        
         {/* Greeting */}
-        <div className="ml-4 text-2xl font-semibold text-text-primary animate-slide-down sm:block hidden">
+        <div className="text-2xl font-semibold text-text-primary animate-slide-down sm:block hidden">
           {greeting.text}
         </div>
-        <div className="ml-4 text-base font-semibold text-text-primary animate-slide-down mobile-greeting sm:hidden block">
+        <div className="text-base font-semibold text-text-primary animate-slide-down mobile-greeting sm:hidden block">
           {greeting.text}
         </div>
       </div>
       
       {/* Desktop Controls */}
       <div className="hidden sm:flex items-center gap-4">
-        <button
-          onClick={handleMyStreakClick}
-          className="text-text-muted hover:text-accent-primary transition-colors mobile-button-text"
-        >
-          My Streak
-        </button>
-        
         <button
           onClick={onFilterClick}
           className="p-2 bg-white/10 rounded-full hover:bg-white/20 hover:scale-105 transition ease-accel duration-fast"
@@ -101,6 +66,22 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
         >
           <Settings className="w-5 h-5" />
         </button>
+
+        {/* Stars and Streak Icons */}
+        <div className="flex items-center gap-2">
+          <img 
+            src="/src/assets/star.svg" 
+            alt="Stars" 
+            className="w-4 h-4 text-accent-primary"
+          />
+          <span className="text-text-primary font-medium text-sm">{userData.totalStars}</span>
+          <img 
+            src="/src/assets/streak.svg" 
+            alt="Streak" 
+            className="w-4 h-4 text-accent-secondary ml-4"
+          />
+          <span className="text-text-primary font-medium text-sm">{userData.currentStreak}</span>
+        </div>
       </div>
 
       {/* Mobile Menu Button */}
@@ -121,36 +102,27 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
             {/* Stars and Streak in Mobile Menu */}
             <div className="px-4 py-3 border-b border-default">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <img 
                       src="/src/assets/star.svg" 
                       alt="Stars" 
-                      className="w-4 h-4"
+                      className="w-4 h-4 text-accent-primary"
                     />
-                    <span className="text-sm font-medium text-primary">{userData.totalStars} Stars</span>
+                    <span className="text-sm font-medium text-text-primary">{userData.totalStars}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <img 
                       src="/src/assets/streak.svg" 
                       alt="Streak" 
-                      className="w-4 h-4"
+                      className="w-4 h-4 text-accent-secondary"
                     />
-                    <span className="text-sm font-medium text-primary">{userData.currentStreak} Day Streak</span>
+                    <span className="text-sm font-medium text-text-primary">{userData.currentStreak}</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <button
-              onClick={() => {
-                handleMyStreakClick();
-                setShowMobileMenu(false);
-              }}
-              className="w-full px-4 py-3 text-left text-text-muted hover:text-accent-primary hover:bg-white/10 transition-colors mobile-button-text"
-            >
-              My Streak
-            </button>
             <button
               onClick={() => {
                 onFilterClick();
