@@ -1,5 +1,5 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="8" cy="8" r="8" fill="#FF6B35"/>
-  <circle cx="8" cy="8" r="6" fill="#FF8C42"/>
-  <text x="8" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold">🔥</text>
+  <title>Streak Icon</title>
+  <path d="M8 1C8 1 12 3 12 7C12 11 8 13 8 13C8 13 4 11 4 7C4 3 8 1 8 1Z" fill="currentColor"/>
+  <circle cx="8" cy="7" r="2" fill="#1F2937"/>
 </svg>

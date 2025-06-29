@@ -29,7 +29,7 @@ export default function WelcomeModal() {
             <img 
               src="/src/assets/tasktrail-logo.svg" 
               alt="TaskTrail Logo" 
-              className="w-12 h-12"
+              className="w-12 h-12 drop-shadow-lg hover:scale-105 transition-transform duration-150"
             />
           </div>
           <div className="flex items-center justify-center gap-2 mb-3">

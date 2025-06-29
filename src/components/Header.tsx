@@ -33,18 +33,23 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
   return (
     <header className="sticky top-0 bg-bg-panel h-16 flex items-center justify-between px-4 z-10">
       <div className="flex items-center">
-        {/* Logo */}
+        {/* Official TaskTrail Logo */}
         <img 
           src="/src/assets/tasktrail-logo.svg" 
           alt="TaskTrail Logo" 
-          className="w-8 h-8 mr-2"
+          className="w-8 h-8 drop-shadow-sm hover:scale-105 transition-transform duration-150 ease-in-out"
+          style={{ marginRight: '0.5rem' }}
         />
         
+        {/* TaskTrail Text */}
+        <span className="text-2xl font-semibold text-text-primary hidden sm:block">TaskTrail</span>
+        <span className="text-lg font-semibold text-text-primary sm:hidden">TaskTrail</span>
+        
         {/* Greeting */}
-        <div className="text-2xl font-semibold text-text-primary animate-slide-down sm:block hidden">
+        <div className="ml-4 text-2xl font-semibold text-text-primary animate-slide-down sm:block hidden">
           {greeting.text}
         </div>
-        <div className="text-base font-semibold text-text-primary animate-slide-down mobile-greeting sm:hidden block">
+        <div className="ml-4 text-base font-semibold text-text-primary animate-slide-down mobile-greeting sm:hidden block">
           {greeting.text}
         </div>
       </div>
@@ -72,13 +77,15 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
           <img 
             src="/src/assets/star.svg" 
             alt="Stars" 
-            className="w-4 h-4 text-accent-primary"
+            className="w-4 h-4 text-accent-primary drop-shadow-sm"
+            style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
           />
           <span className="text-text-primary font-medium text-sm">{userData.totalStars}</span>
           <img 
             src="/src/assets/streak.svg" 
             alt="Streak" 
-            className="w-4 h-4 text-accent-secondary ml-4"
+            className="w-4 h-4 text-accent-secondary ml-4 drop-shadow-sm"
+            style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
           />
           <span className="text-text-primary font-medium text-sm">{userData.currentStreak}</span>
         </div>

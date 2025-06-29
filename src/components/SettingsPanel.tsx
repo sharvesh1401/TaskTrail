@@ -33,7 +33,7 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
           <img 
             src="/src/assets/tasktrail-logo.svg" 
             alt="TaskTrail Logo" 
-            className="w-6 h-6"
+            className="w-6 h-6 drop-shadow-sm"
           />
           <h1 className="text-2xl font-bold">Settings</h1>
         </div>
@@ -48,7 +48,7 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
               <img 
                 src="/src/assets/star.svg" 
                 alt="Stars" 
-                className="w-6 h-6"
+                className="w-6 h-6 text-accent-primary drop-shadow-sm"
               />
               <span className="text-2xl font-bold text-primary">{userData.totalStars}</span>
             </div>
@@ -59,7 +59,7 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
               <img 
                 src="/src/assets/streak.svg" 
                 alt="Streak" 
-                className="w-6 h-6"
+                className="w-6 h-6 text-accent-secondary drop-shadow-sm"
               />
               <span className="text-2xl font-bold text-primary">{userData.currentStreak}</span>
             </div>

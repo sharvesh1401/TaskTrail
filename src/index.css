@@ -23,6 +23,7 @@
     --accent-primary: 258 90% 66%;
     --accent-hover: 258 90% 70%;
     --accent-active: 258 90% 55%;
+    --accent-secondary: 200 95% 45%;
     
     /* Task colors */
     --task-pending: 218 15% 18%;
@@ -101,6 +102,19 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--text-muted));
   }
+}
+
+/* Logo styling enhancements */
+.logo-glow {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.logo-hover {
+  transition: transform 150ms ease-in-out;
+}
+
+.logo-hover:hover {
+  transform: scale(1.05);
 }
 
 /* Animation keyframes */
@@ -444,6 +458,10 @@
 
 .text-accent-primary {
   color: hsl(var(--accent-primary));
+}
+
+.text-accent-secondary {
+  color: hsl(var(--accent-secondary));
 }
 
 .text-success {
