@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Star, Zap } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { Switch } from './ui/switch';
 import StreakCalendar from './StreakCalendar';
@@ -45,22 +45,14 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <img 
-                src="/src/assets/star.svg" 
-                alt="Stars" 
-                className="w-6 h-6 text-accent-primary drop-shadow-sm"
-              />
+              <Star className="w-6 h-6 text-accent-primary" />
               <span className="text-2xl font-bold text-primary">{userData.totalStars}</span>
             </div>
             <p className="text-sm text-muted">Total Stars</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <img 
-                src="/src/assets/streak.svg" 
-                alt="Streak" 
-                className="w-6 h-6 text-accent-secondary drop-shadow-sm"
-              />
+              <Zap className="w-6 h-6 text-accent-secondary" />
               <span className="text-2xl font-bold text-primary">{userData.currentStreak}</span>
             </div>
             <p className="text-sm text-muted">Day Streak</p>

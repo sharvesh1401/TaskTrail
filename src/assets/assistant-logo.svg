@@ -1,8 +1,6 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <title>TrailGuide AI Assistant</title>
-  <!-- Map pin shape -->
-  <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22S19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="currentColor"/>
-  <!-- Chat bubble inside -->
-  <circle cx="12" cy="9" r="3" fill="white"/>
-  <path d="M10.5 8H13.5C13.78 8 14 8.22 14 8.5V9.5C14 9.78 13.78 10 13.5 10H12L11.5 10.5L11 10H10.5C10.22 10 10 9.78 10 9.5V8.5C10 8.22 10.22 8 10.5 8Z" fill="currentColor"/>
+  <circle cx="12" cy="8" r="6" fill="currentColor" stroke="currentColor" stroke-width="2"/>
+  <circle cx="12" cy="8" r="3" fill="white"/>
+  <path d="M10.5 7h3c.28 0 .5.22.5.5v1c0 .28-.22.5-.5.5H12l-.5.5-.5-.5h-1c-.28 0-.5-.22-.5-.5v-1c0-.28.22-.5.5-.5z" fill="currentColor"/>
+  <path d="M12 14C8.13 14 5 17.13 5 21h14c0-3.87-3.13-7-7-7z" fill="currentColor" stroke="currentColor" stroke-width="2"/>
 </svg>

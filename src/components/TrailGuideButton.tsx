@@ -1,4 +1,5 @@
 import React from 'react';
+import { MessageCircle } from 'lucide-react';
 
 interface TrailGuideButtonProps {
   onClick: () => void;
@@ -15,12 +16,7 @@ export default function TrailGuideButton({ onClick, isVisible }: TrailGuideButto
       aria-label="Chat with TrailGuide"
       title="Chat with TrailGuide - Your AI productivity assistant"
     >
-      <img 
-        src="/src/assets/assistant-logo.svg" 
-        alt="TrailGuide AI Assistant" 
-        className="w-6 h-6"
-        title="TrailGuide"
-      />
+      <MessageCircle className="w-6 h-6 text-white" />
     </button>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Filter, Menu, X } from 'lucide-react';
+import { Settings, Filter, Menu, X, Star, Zap } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { GreetingType } from '../types';
 
@@ -49,19 +49,9 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
           {/* Right: Stats + Menu Button */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <img 
-                src="/src/assets/star.svg" 
-                alt="Stars" 
-                className="w-4 h-4 text-accent-primary drop-shadow-sm"
-                style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
-              />
+              <Star className="w-4 h-4 text-accent-primary" />
               <span className="text-text-primary font-medium text-sm">{userData.totalStars}</span>
-              <img 
-                src="/src/assets/streak.svg" 
-                alt="Streak" 
-                className="w-4 h-4 text-accent-secondary ml-2 drop-shadow-sm"
-                style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
-              />
+              <Zap className="w-4 h-4 text-accent-secondary ml-2" />
               <span className="text-text-primary font-medium text-sm">{userData.currentStreak}</span>
             </div>
             
@@ -85,18 +75,12 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
       {/* Desktop Header Layout (hidden sm:flex) */}
       <div className="hidden sm:flex items-center justify-between px-4 h-16">
         <div className="flex items-center">
-          {/* Official TaskTrail Logo */}
           <img 
             src="/src/assets/tasktrail-logo.svg" 
             alt="TaskTrail Logo" 
             className="w-8 h-8 drop-shadow-sm hover:scale-105 transition-transform duration-150 ease-in-out"
-            style={{ marginRight: '0.5rem' }}
           />
           
-          {/* TaskTrail Text */}
-          <span className="text-2xl font-semibold text-text-primary">TaskTrail</span>
-          
-          {/* Greeting (Desktop Only) */}
           <div className="ml-4 text-2xl font-semibold text-text-primary animate-slide-down">
             {greeting.text}
           </div>
@@ -122,19 +106,9 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
 
           {/* Stars and Streak Icons (Desktop) */}
           <div className="flex items-center gap-2">
-            <img 
-              src="/src/assets/star.svg" 
-              alt="Stars" 
-              className="w-4 h-4 text-accent-primary drop-shadow-sm"
-              style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
-            />
+            <Star className="w-4 h-4 text-accent-primary" />
             <span className="text-text-primary font-medium text-sm">{userData.totalStars}</span>
-            <img 
-              src="/src/assets/streak.svg" 
-              alt="Streak" 
-              className="w-4 h-4 text-accent-secondary ml-4 drop-shadow-sm"
-              style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
-            />
+            <Zap className="w-4 h-4 text-accent-secondary ml-4" />
             <span className="text-text-primary font-medium text-sm">{userData.currentStreak}</span>
           </div>
         </div>
