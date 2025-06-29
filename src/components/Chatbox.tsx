@@ -105,44 +105,28 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         systemPrompt += ` The user currently has ${activeTasks.length} active tasks: ${activeTasks.map(t => t.title).join(', ')}.`;
       }
 
-      // Secure API call to backend endpoint
-      const response = await fetch('/api/groq', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: systemPrompt
-            },
-            {
-              role: 'user',
-              content: currentInput
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 500,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      // Simulate AI response for demo purposes
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      
+      const responses = [
+        "Great question! Here are some tips to help you stay productive and focused on your goals.",
+        "I'd be happy to help! Breaking down tasks into smaller steps often makes them more manageable.",
+        "That's a common challenge! Try setting specific time blocks for focused work and take regular breaks.",
+        "Excellent! Consider prioritizing your most important tasks first thing in the morning when your energy is highest.",
+        "Here's what I recommend: Start with the smallest task to build momentum, then tackle the bigger ones.",
+        relatedTask ? `For "${relatedTask.title}", I suggest breaking it into smaller, actionable steps. What specific part would you like to start with?` : "Focus on one task at a time and celebrate small wins along the way!"
+      ];
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.message || 'Sorry, I couldn\'t process your request.',
+        text: responses[Math.floor(Math.random() * responses.length)],
         isUser: false,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Groq API error:', error);
+      console.error('Chat error:', error);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
