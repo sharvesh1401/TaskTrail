@@ -7,7 +7,7 @@ import WelcomeModal from '../components/WelcomeModal';
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
 import FilterSort from '../components/FilterSort';
-import DeepSeekButton from '../components/DeepSeekButton';
+import TrailGuideButton from '../components/DeepSeekButton';
 import Chatbox from '../components/Chatbox';
 import Fireworks from '../components/Fireworks';
 import SettingsPanel from '../components/SettingsPanel';
@@ -104,7 +104,7 @@ function TaskTrailApp() {
         editingTask={editingTask}
       />
       
-      <DeepSeekButton onClick={() => setShowChatbox(true)} />
+      <TrailGuideButton onClick={() => setShowChatbox(true)} />
       <Chatbox isOpen={showChatbox} onClose={() => setShowChatbox(false)} />
       <Fireworks isActive={showFireworks} onComplete={handleFireworksComplete} />
 

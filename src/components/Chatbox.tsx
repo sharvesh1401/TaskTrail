@@ -40,19 +40,17 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://api.deepseek.com/chat/completions', {
+      // Use Groq API instead of DeepSeek
+      const response = await fetch('/api/groq', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer sk-744d64e9a996410da9b03c7c79b66d8f',
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
           messages: [
             {
               role: 'system',
-              content: 'You are TrailGuide, a helpful AI productivity assistant. Be friendly, concise, and focus on helping users with task management, goal setting, and productivity tips.'
+              content: 'You are TrailGuide, a helpful AI productivity assistant for TaskTrail. Be friendly, concise, and focus on helping users with task management, goal setting, and productivity tips. Keep responses under 150 words.'
             },
             {
               role: 'user',
@@ -60,50 +58,30 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
             }
           ],
           temperature: 0.7,
-          max_tokens: 1000,
+          max_tokens: 500,
         }),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('DeepSeek API response:', response.status, response.statusText, errorText);
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error('Invalid response format from DeepSeek API');
-      }
-      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.choices[0].message.content || 'Sorry, I couldn\'t process your request.',
+        text: data.message || 'Sorry, I couldn\'t process your request.',
         isUser: false,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('DeepSeek API error:', error);
-      
-      let errorText = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('CORS')) {
-          errorText = 'Unable to connect due to browser security restrictions. This feature may need to be implemented with a backend server.';
-        } else if (error.message.includes('401')) {
-          errorText = 'Authentication failed. Please check the API key configuration.';
-        } else if (error.message.includes('429')) {
-          errorText = 'Rate limit exceeded. Please wait a moment before trying again.';
-        } else if (error.message.includes('Failed to fetch')) {
-          errorText = 'Network error. Please check your internet connection and try again.';
-        }
-      }
+      console.error('Groq API error:', error);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: errorText,
+        text: 'Sorry, I\'m having trouble connecting right now. Please try again later.',
         isUser: false,
         timestamp: new Date(),
       };
@@ -129,9 +107,9 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-accent-primary rounded-full flex items-center justify-center">
             <img 
-              src="/src/assets/trailguide-icon.svg" 
+              src="/src/assets/assistant-logo.svg" 
               alt="TrailGuide" 
-              className="w-5 h-5 text-white"
+              className="w-5 h-5"
             />
           </div>
           <div>
@@ -152,7 +130,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         {messages.length === 0 && (
           <div className="text-center text-muted py-8">
             <img 
-              src="/src/assets/trailguide-icon.svg" 
+              src="/src/assets/assistant-logo.svg" 
               alt="TrailGuide" 
               className="w-12 h-12 mx-auto mb-3 opacity-50"
             />

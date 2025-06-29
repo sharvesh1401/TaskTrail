@@ -39,6 +39,35 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
         </div>
       </div>
 
+      {/* User Stats */}
+      <div className="bg-surface-card rounded-lg p-6 mb-6">
+        <h3 className="font-medium text-primary mb-4">Your Progress</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <img 
+                src="/src/assets/star.svg" 
+                alt="Stars" 
+                className="w-6 h-6"
+              />
+              <span className="text-2xl font-bold text-primary">{userData.totalStars}</span>
+            </div>
+            <p className="text-sm text-muted">Total Stars</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <img 
+                src="/src/assets/streak.svg" 
+                alt="Streak" 
+                className="w-6 h-6"
+              />
+              <span className="text-2xl font-bold text-primary">{userData.currentStreak}</span>
+            </div>
+            <p className="text-sm text-muted">Day Streak</p>
+          </div>
+        </div>
+      </div>
+
       {/* Auto-delete setting */}
       <div className="bg-surface-card rounded-lg">
         <div className="flex items-center justify-between py-4 px-6">

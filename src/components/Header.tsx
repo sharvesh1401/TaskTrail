@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Settings, Filter, Menu, X } from 'lucide-react';
+import { Settings, Filter, Menu, X } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { GreetingType } from '../types';
 
@@ -38,12 +38,37 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
 
   return (
     <header className="sticky top-0 bg-bg-panel h-16 flex items-center justify-between px-4 z-10">
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
+        {/* Logo */}
         <img 
           src="/src/assets/tasktrail-logo.svg" 
           alt="TaskTrail Logo" 
-          className="w-8 h-8"
+          className="w-8 h-8 mr-2"
         />
+        
+        {/* Stars Counter */}
+        <div className="flex items-center gap-1">
+          <img 
+            src="/src/assets/star.svg" 
+            alt="Stars" 
+            className="w-4 h-4"
+          />
+          <span className="text-sm font-medium text-primary">{userData.totalStars}</span>
+        </div>
+        
+        {/* Streak Badge */}
+        <div className="flex items-center gap-1">
+          <div className="relative">
+            <img 
+              src="/src/assets/streak.svg" 
+              alt="Streak" 
+              className="w-4 h-4"
+            />
+          </div>
+          <span className="text-sm font-medium text-primary">{userData.currentStreak}</span>
+        </div>
+        
+        {/* Greeting */}
         <div className="ml-4 text-2xl font-semibold text-text-primary animate-slide-down sm:block hidden">
           {greeting.text}
         </div>
@@ -93,6 +118,30 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
       {showMobileMenu && (
         <div className="absolute top-16 right-4 bg-bg-panel border border-default rounded-lg shadow-lg z-20 sm:hidden animate-slide-up">
           <div className="py-2">
+            {/* Stars and Streak in Mobile Menu */}
+            <div className="px-4 py-3 border-b border-default">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <img 
+                      src="/src/assets/star.svg" 
+                      alt="Stars" 
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm font-medium text-primary">{userData.totalStars} Stars</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <img 
+                      src="/src/assets/streak.svg" 
+                      alt="Streak" 
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm font-medium text-primary">{userData.currentStreak} Day Streak</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <button
               onClick={() => {
                 handleMyStreakClick();

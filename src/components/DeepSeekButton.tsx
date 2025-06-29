@@ -1,10 +1,10 @@
 import React from 'react';
 
-interface DeepSeekButtonProps {
+interface TrailGuideButtonProps {
   onClick: () => void;
 }
 
-export default function DeepSeekButton({ onClick }: DeepSeekButtonProps) {
+export default function TrailGuideButton({ onClick }: TrailGuideButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -13,9 +13,9 @@ export default function DeepSeekButton({ onClick }: DeepSeekButtonProps) {
       title="Chat with TrailGuide"
     >
       <img 
-        src="/src/assets/trailguide-icon.svg" 
-        alt="TrailGuide" 
-        className="w-6 h-6 text-white"
+        src="/src/assets/assistant-logo.svg" 
+        alt="TrailGuide AI Assistant" 
+        className="w-6 h-6"
       />
     </button>
   );
