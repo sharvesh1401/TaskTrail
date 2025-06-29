@@ -7,7 +7,7 @@ import WelcomeModal from '../components/WelcomeModal';
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
 import FilterSort from '../components/FilterSort';
-import TrailGuideButton from '../components/DeepSeekButton';
+import TrailGuideButton from '../components/TrailGuideButton';
 import Chatbox from '../components/Chatbox';
 import Fireworks from '../components/Fireworks';
 import SettingsPanel from '../components/SettingsPanel';
@@ -45,6 +45,14 @@ function TaskTrailApp() {
 
   const handleFilterClick = () => {
     setShowFilterSort(!showFilterSort);
+  };
+
+  const handleChatOpen = () => {
+    setShowChatbox(true);
+  };
+
+  const handleChatClose = () => {
+    setShowChatbox(false);
   };
 
   return (
@@ -104,8 +112,18 @@ function TaskTrailApp() {
         editingTask={editingTask}
       />
       
-      <TrailGuideButton onClick={() => setShowChatbox(true)} />
-      <Chatbox isOpen={showChatbox} onClose={() => setShowChatbox(false)} />
+      {/* TrailGuide Button - Only show when chat is closed */}
+      <TrailGuideButton 
+        onClick={handleChatOpen} 
+        isVisible={!showChatbox}
+      />
+      
+      {/* Chatbox - Apple iMessage Style */}
+      <Chatbox 
+        isOpen={showChatbox} 
+        onClose={handleChatClose} 
+      />
+      
       <Fireworks isActive={showFireworks} onComplete={handleFireworksComplete} />
 
       {/* Mobile Filter & Sort Bottom Sheet */}

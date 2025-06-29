@@ -105,56 +105,58 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="chatbox-container">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-default bg-var(--chat-bg)">
+    <div className="fixed bottom-6 left-6 max-w-[400px] w-[90vw] max-h-[60vh] flex flex-col bg-[#1a1a1a] rounded-2xl shadow-2xl overflow-hidden z-50 animate-scale-in backdrop-blur-xl border border-white/10">
+      {/* Header - iMessage Style */}
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-[#1a1a1a] to-[#2a2a2a] border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-accent-primary rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-accent-primary to-accent-hover rounded-full flex items-center justify-center shadow-lg">
             <img 
               src="/src/assets/assistant-logo.svg" 
               alt="TrailGuide" 
-              className="w-5 h-5"
+              className="w-6 h-6"
               title="TrailGuide AI Assistant"
             />
           </div>
           <div>
-            <h3 className="font-medium text-primary">TrailGuide</h3>
-            <p className="text-xs text-muted">Your AI productivity assistant</p>
+            <h3 className="font-semibold text-white text-base">TrailGuide</h3>
+            <p className="text-xs text-gray-400">AI Assistant • Online</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-1 hover:bg-surface-card rounded-full transition-colors"
+          className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 group"
           aria-label="Close chat"
         >
-          <X className="w-5 h-5 text-muted" />
+          <X className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
         </button>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+      {/* Messages Container - iMessage Style */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-[#0a0a0a]">
         {messages.length === 0 && (
-          <div className="text-center text-muted py-8">
-            <img 
-              src="/src/assets/assistant-logo.svg" 
-              alt="TrailGuide" 
-              className="w-12 h-12 mx-auto mb-3 opacity-50"
-            />
-            <p className="mb-2">👋 Hi! I'm TrailGuide, your AI assistant.</p>
-            <p className="text-sm">Ask me anything about task management, goal setting, or productivity tips!</p>
+          <div className="text-center text-gray-400 py-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-accent-primary to-accent-hover rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <img 
+                src="/src/assets/assistant-logo.svg" 
+                alt="TrailGuide" 
+                className="w-8 h-8"
+              />
+            </div>
+            <p className="mb-2 text-white font-medium">👋 Hey there! I'm TrailGuide</p>
+            <p className="text-sm text-gray-400">Your AI productivity assistant is here to help with tasks, goals, and productivity tips!</p>
           </div>
         )}
         
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-msg-in`}
           >
             <div
-              className={`max-w-[80%] ${
+              className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${
                 message.isUser
-                  ? 'bubble-user animate-user-pop'
-                  : 'bubble-trailguide animate-msg-in'
+                  ? 'bg-[#007AFF] text-white rounded-[20px] rounded-br-[8px] shadow-lg'
+                  : 'bg-[#2a2a2a] text-white rounded-[20px] rounded-bl-[8px] shadow-lg border border-white/10'
               }`}
               aria-label={message.isUser ? "Your Message" : "Message from TrailGuide"}
             >
@@ -164,12 +166,12 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         ))}
         
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bubble-trailguide animate-msg-in">
+          <div className="flex justify-start animate-msg-in">
+            <div className="bg-[#2a2a2a] text-white rounded-[20px] rounded-bl-[8px] px-4 py-3 shadow-lg border border-white/10">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-white/60 rounded-full animate-typing-dot"></div>
-                <div className="w-2 h-2 bg-white/60 rounded-full animate-typing-dot" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-white/60 rounded-full animate-typing-dot" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </div>
@@ -178,28 +180,30 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Container */}
-      <div className="chat-input-container">
+      {/* Input Container - iMessage Style */}
+      <div className="p-4 bg-[#1a1a1a] border-t border-white/10">
         <label htmlFor="chat-input" className="sr-only">Type a message</label>
-        <div className="flex gap-2 items-end">
-          <input
-            id="chat-input"
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Message TrailGuide..."
-            aria-placeholder="Type your message here"
-            className="chat-input"
-            disabled={isLoading}
-          />
+        <div className="flex gap-3 items-end">
+          <div className="flex-1 relative">
+            <input
+              id="chat-input"
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="iMessage"
+              aria-placeholder="Type your message here"
+              className="w-full bg-[#2a2a2a] border border-white/20 rounded-full px-4 py-3 text-white text-sm placeholder-gray-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition-all duration-200"
+              disabled={isLoading}
+            />
+          </div>
           <button
             onClick={handleSendClick}
             disabled={!inputText.trim() || isLoading}
-            className="send-button"
+            className="w-10 h-10 bg-[#007AFF] hover:bg-[#0056CC] disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shadow-lg"
             aria-label="Send message"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4 text-white" />
           </button>
         </div>
       </div>
