@@ -5,6 +5,12 @@
     }
   },
   "env": {
-    "GROQ_API_KEY": "@groq-api-key"
-  }
+    "GROQ_API_KEY": "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"
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
 }
