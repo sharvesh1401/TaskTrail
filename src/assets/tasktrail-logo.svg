@@ -1,6 +1,19 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="32" cy="32" r="30" fill="#8B5CF6" stroke="#2D1B69" stroke-width="4"/>
-  <path d="M20 32L28 40L44 24" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M32 16C36 20 40 24 44 32C40 40 36 44 32 48C28 44 24 40 20 32C24 24 28 20 32 16Z" fill="white" opacity="0.3"/>
-  <circle cx="40" cy="20" r="4" fill="white"/>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer dark ring -->
+  <circle cx="256" cy="256" r="200" fill="#2D3748" stroke="#1A202C" stroke-width="8"/>
+  
+  <!-- Inner purple circle -->
+  <circle cx="256" cy="256" r="170" fill="#8B5CF6"/>
+  
+  <!-- Check mark -->
+  <path d="M200 256L230 286L320 196" stroke="white" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Winding trail/path -->
+  <path d="M320 320C320 320 280 340 240 320C200 300 180 260 200 220C220 180 260 160 300 180C340 200 360 240 340 280C320 320 280 340 240 320" 
+        stroke="white" stroke-width="16" stroke-linecap="round" fill="none"/>
+  
+  <!-- Star/sparkle -->
+  <g transform="translate(350, 180)">
+    <path d="M0 -12L3 -3L12 0L3 3L0 12L-3 3L-12 0L-3 -3Z" fill="white"/>
+  </g>
 </svg>

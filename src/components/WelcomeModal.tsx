@@ -29,12 +29,12 @@ export default function WelcomeModal() {
             <img 
               src="/src/assets/tasktrail-logo.svg" 
               alt="TaskTrail Logo" 
-              className="w-10 h-10"
+              className="w-12 h-12"
             />
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold text-primary">Task</span>
-              <span className="text-3xl font-bold text-accent-primary">Trail</span>
-            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <span className="text-3xl font-bold text-primary">Task</span>
+            <span className="text-3xl font-bold text-accent-primary">Trail</span>
           </div>
           <p className="text-secondary">
             Transform your to-dos into a rewarding habit-building journey
