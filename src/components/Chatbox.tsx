@@ -9,8 +9,8 @@ interface ChatboxProps {
 
 interface Message {
   id: string;
-  text: string;
-  isUser: boolean;
+  role: 'user' | 'assistant';
+  content: string;
   timestamp: Date;
   isError?: boolean;
 }
@@ -48,7 +48,8 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       'stuck on',
       'need help with',
       'guidance on',
-      'tips for'
+      'tips for',
+      'how do i'
     ];
 
     const hasTaskPhrase = taskPhrases.some(phrase => lowerMessage.includes(phrase));
@@ -66,13 +67,51 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     return null;
   };
 
+  const buildApiPayload = (userMessage: string) => {
+    const relatedTask = detectTaskContext(userMessage);
+    const currentTasks = tasks.filter(task => !task.completed).slice(0, 10);
+    
+    // Base system prompt
+    let systemPrompt = "You are TrailGuide, an AI assistant for TaskTrail. Use the following list of the user's current tasks to give concise, actionable answers when asked. Do not re-prompt or loop. If the user asks general questions, answer normally without task context.";
+    
+    // Task-specific context if detected
+    if (relatedTask) {
+      systemPrompt = `You are TrailGuide, an AI assistant for TaskTrail. The user is asking for help with the task: "${relatedTask.title}"`;
+      if (relatedTask.goal) {
+        systemPrompt += ` (goal: "${relatedTask.goal}")`;
+      }
+      if (relatedTask.description) {
+        systemPrompt += ` (description: "${relatedTask.description}")`;
+      }
+      systemPrompt += '. Provide step-by-step guidance tailored to this task.';
+    }
+    
+    // Build tasks context for general assistance
+    const tasksContext = currentTasks.map(task => ({
+      title: task.title,
+      goal: task.goal || '',
+      importance: task.importance,
+      status: task.completed ? 'completed' : 'pending'
+    }));
+    
+    // Limit conversation history to last 20 messages
+    const recentMessages = messages.slice(-20);
+    
+    return {
+      systemPrompt,
+      tasksContext: relatedTask ? [] : tasksContext, // Only include general context if not task-specific
+      conversation: recentMessages,
+      userMessage
+    };
+  };
+
   const sendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputText,
-      isUser: true,
+      role: 'user',
+      content: inputText,
       timestamp: new Date(),
     };
 
@@ -82,56 +121,41 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     setIsLoading(true);
 
     try {
-      // Detect task context
-      const relatedTask = detectTaskContext(currentInput);
+      // Build API payload
+      const payload = buildApiPayload(currentInput);
       
-      // Build system prompt with task context if available
-      let systemPrompt = 'You are TrailGuide, a helpful AI productivity assistant for TaskTrail. Be friendly, concise, and focus on helping users with task management, goal setting, and productivity tips. Keep responses under 150 words and be encouraging.';
-      
-      if (relatedTask) {
-        systemPrompt += ` The user is asking for help with the task: "${relatedTask.title}"`;
-        if (relatedTask.goal) {
-          systemPrompt += ` (goal: "${relatedTask.goal}")`;
-        }
-        if (relatedTask.description) {
-          systemPrompt += ` (description: "${relatedTask.description}")`;
-        }
-        systemPrompt += '. Provide step-by-step guidance tailored to this specific task.';
+      // Call the secure API endpoint
+      const response = await fetch('/api/groq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      // Include current tasks context for better assistance
-      const activeTasks = tasks.filter(task => !task.completed).slice(0, 5);
-      if (activeTasks.length > 0 && !relatedTask) {
-        systemPrompt += ` The user currently has ${activeTasks.length} active tasks: ${activeTasks.map(t => t.title).join(', ')}.`;
-      }
-
-      // Simulate AI response for demo purposes
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      const data = await response.json();
       
-      const responses = [
-        "Great question! Here are some tips to help you stay productive and focused on your goals.",
-        "I'd be happy to help! Breaking down tasks into smaller steps often makes them more manageable.",
-        "That's a common challenge! Try setting specific time blocks for focused work and take regular breaks.",
-        "Excellent! Consider prioritizing your most important tasks first thing in the morning when your energy is highest.",
-        "Here's what I recommend: Start with the smallest task to build momentum, then tackle the bigger ones.",
-        relatedTask ? `For "${relatedTask.title}", I suggest breaking it into smaller, actionable steps. What specific part would you like to start with?` : "Focus on one task at a time and celebrate small wins along the way!"
-      ];
+      if (!data.response) {
+        throw new Error('Invalid response format from API');
+      }
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: responses[Math.floor(Math.random() * responses.length)],
-        isUser: false,
+        role: 'assistant',
+        content: data.response,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error('TrailGuide API error:', error);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Oops, something went wrong. Try again?',
-        isUser: false,
+        role: 'assistant',
+        content: 'Sorry, I couldn\'t reach TrailGuide. Please try again.',
         timestamp: new Date(),
         isError: true,
       };
@@ -213,26 +237,26 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex animate-msg-in ${message.isUser ? 'justify-end' : 'justify-start'}`}
+            className={`flex animate-msg-in ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
               className={`max-w-[80%] px-4 py-2 text-sm leading-relaxed rounded-2xl ${
-                message.isUser
+                message.role === 'user'
                   ? 'text-white rounded-br-md'
                   : message.isError
                   ? 'bg-error/20 text-error border border-error/30 rounded-bl-md'
                   : 'text-primary rounded-bl-md'
               }`}
               style={{
-                backgroundColor: message.isUser 
+                backgroundColor: message.role === 'user' 
                   ? 'hsl(var(--accent-primary))' 
                   : message.isError 
                   ? undefined 
                   : 'hsl(var(--chat-user-bg))'
               }}
-              aria-label={message.isUser ? "Your Message" : "Message from TrailGuide"}
+              aria-label={message.role === 'user' ? "Your Message" : "Message from TrailGuide"}
             >
-              {message.text}
+              {message.content}
             </div>
           </div>
         ))}
@@ -244,9 +268,9 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
               style={{ backgroundColor: 'hsl(var(--chat-user-bg))' }}
             >
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </div>
