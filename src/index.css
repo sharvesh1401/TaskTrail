@@ -55,10 +55,10 @@
     --particle-opacity: 0.05;
     
     /* TrailGuide Chat Colors */
-    --chat-bg: #272946;
-    --chat-user-bg: #1F204A;
+    --chat-bg: 218 18% 16%;
+    --chat-user-bg: 218 15% 18%;
     --chat-accent-bg: 258 90% 66%;
-    --chat-input-bg: #1A1C3B;
+    --chat-input-bg: 218 15% 18%;
     --chat-radius: 12px;
     --chat-shadow: 0 4px 12px rgba(0,0,0,0.3);
     
@@ -162,6 +162,22 @@
 
 .animate-typing-dot {
   animation: typingDot 1.4s infinite;
+}
+
+/* Chatbox Container */
+.chatbox-container {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  max-width: 400px;
+  width: 90vw;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--bg-panel));
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  overflow: hidden;
 }
 
 /* Animation keyframes */

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     }
 
     // Get API key from environment variables (secure server-side only)
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY || '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';
     
     if (!apiKey) {
       console.error('GROQ_API_KEY not found in environment variables');

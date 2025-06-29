@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, X } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
 
 interface ChatboxProps {
   isOpen: boolean;
@@ -11,19 +12,59 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  isError?: boolean;
 }
 
 export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
+  const { state } = useApp();
+  const { tasks } = state;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  // Auto-focus input when chat opens or after sending a message
+  useEffect(() => {
+    if (isOpen && inputRef.current && !isLoading) {
+      inputRef.current.focus();
+    }
+  }, [isOpen, isLoading]);
+
+  const detectTaskContext = (message: string) => {
+    const lowerMessage = message.toLowerCase();
+    
+    // Look for task-related phrases
+    const taskPhrases = [
+      'help me with',
+      'how do i complete',
+      'how to finish',
+      'stuck on',
+      'need help with',
+      'guidance on',
+      'tips for'
+    ];
+
+    const hasTaskPhrase = taskPhrases.some(phrase => lowerMessage.includes(phrase));
+    
+    if (hasTaskPhrase) {
+      // Try to find a matching task by title
+      const matchedTask = tasks.find(task => 
+        lowerMessage.includes(task.title.toLowerCase()) ||
+        (task.goal && lowerMessage.includes(task.goal.toLowerCase()))
+      );
+      
+      return matchedTask;
+    }
+    
+    return null;
+  };
 
   const sendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
@@ -36,10 +77,34 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputText;
     setInputText('');
     setIsLoading(true);
 
     try {
+      // Detect task context
+      const relatedTask = detectTaskContext(currentInput);
+      
+      // Build system prompt with task context if available
+      let systemPrompt = 'You are TrailGuide, a helpful AI productivity assistant for TaskTrail. Be friendly, concise, and focus on helping users with task management, goal setting, and productivity tips. Keep responses under 150 words and be encouraging.';
+      
+      if (relatedTask) {
+        systemPrompt += ` The user is asking for help with the task: "${relatedTask.title}"`;
+        if (relatedTask.goal) {
+          systemPrompt += ` (goal: "${relatedTask.goal}")`;
+        }
+        if (relatedTask.description) {
+          systemPrompt += ` (description: "${relatedTask.description}")`;
+        }
+        systemPrompt += '. Provide step-by-step guidance tailored to this specific task.';
+      }
+
+      // Include current tasks context for better assistance
+      const activeTasks = tasks.filter(task => !task.completed).slice(0, 5);
+      if (activeTasks.length > 0 && !relatedTask) {
+        systemPrompt += ` The user currently has ${activeTasks.length} active tasks: ${activeTasks.map(t => t.title).join(', ')}.`;
+      }
+
       // Secure API call to backend endpoint
       const response = await fetch('/api/groq', {
         method: 'POST',
@@ -50,11 +115,11 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
           messages: [
             {
               role: 'system',
-              content: 'You are TrailGuide, a helpful AI productivity assistant for TaskTrail. Be friendly, concise, and focus on helping users with task management, goal setting, and productivity tips. Keep responses under 150 words.'
+              content: systemPrompt
             },
             {
               role: 'user',
-              content: inputText
+              content: currentInput
             }
           ],
           temperature: 0.7,
@@ -81,13 +146,20 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Sorry, I\'m having trouble connecting right now. Please try again later.',
+        text: 'Oops, something went wrong. Try again?',
         isUser: false,
         timestamp: new Date(),
+        isError: true,
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      // Re-focus input for continuous conversation
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   };
 
@@ -105,59 +177,75 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 max-w-[400px] w-[90vw] max-h-[60vh] flex flex-col bg-[#1a1a1a] rounded-2xl shadow-2xl overflow-hidden z-50 animate-scale-in backdrop-blur-xl border border-white/10">
-      {/* Header - iMessage Style */}
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-[#1a1a1a] to-[#2a2a2a] border-b border-white/10">
+    <div 
+      className="chatbox-container fixed bottom-6 left-6 max-w-[400px] w-[90vw] max-h-[60vh] flex flex-col rounded-xl shadow-2xl overflow-hidden z-50 animate-scale-in"
+      style={{ 
+        background: 'hsl(var(--bg-panel))',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+      }}
+      aria-busy={isLoading}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-default">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-accent-primary to-accent-hover rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-8 h-8 bg-accent-primary rounded-full flex items-center justify-center">
             <img 
-              src="/src/assets/assistant-logo.svg" 
+              src="/src/assets/trailguide-icon.svg" 
               alt="TrailGuide" 
-              className="w-6 h-6"
-              title="TrailGuide AI Assistant"
+              className="w-5 h-5 text-white"
             />
           </div>
           <div>
-            <h3 className="font-semibold text-white text-base">TrailGuide</h3>
-            <p className="text-xs text-gray-400">AI Assistant • Online</p>
+            <h3 className="font-medium text-primary">TrailGuide</h3>
+            <p className="text-xs text-muted">Your AI productivity assistant</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 group"
-          aria-label="Close chat"
+          className="p-1 hover:bg-surface-card rounded-full transition-colors"
         >
-          <X className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+          <X className="w-5 h-5 text-muted" />
         </button>
       </div>
 
-      {/* Messages Container - iMessage Style */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-[#0a0a0a]">
+      {/* Messages */}
+      <div 
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0"
+        aria-live="polite"
+        aria-label="Chat messages"
+      >
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 py-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-accent-primary to-accent-hover rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <img 
-                src="/src/assets/assistant-logo.svg" 
-                alt="TrailGuide" 
-                className="w-8 h-8"
-              />
-            </div>
-            <p className="mb-2 text-white font-medium">👋 Hey there! I'm TrailGuide</p>
-            <p className="text-sm text-gray-400">Your AI productivity assistant is here to help with tasks, goals, and productivity tips!</p>
+          <div className="text-center text-muted py-8">
+            <img 
+              src="/src/assets/trailguide-icon.svg" 
+              alt="TrailGuide" 
+              className="w-12 h-12 mx-auto mb-3 opacity-50"
+            />
+            <p className="mb-2">👋 Hi! I'm TrailGuide, your AI assistant.</p>
+            <p className="text-sm">Ask me anything about task management, goal setting, or productivity tips!</p>
           </div>
         )}
         
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-msg-in`}
+            className={`flex animate-msg-in ${message.isUser ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed ${
+              className={`max-w-[80%] px-4 py-2 text-sm leading-relaxed rounded-2xl ${
                 message.isUser
-                  ? 'bg-[#007AFF] text-white rounded-[20px] rounded-br-[8px] shadow-lg'
-                  : 'bg-[#2a2a2a] text-white rounded-[20px] rounded-bl-[8px] shadow-lg border border-white/10'
+                  ? 'text-white rounded-br-md'
+                  : message.isError
+                  ? 'bg-error/20 text-error border border-error/30 rounded-bl-md'
+                  : 'text-primary rounded-bl-md'
               }`}
+              style={{
+                backgroundColor: message.isUser 
+                  ? 'hsl(var(--accent-primary))' 
+                  : message.isError 
+                  ? undefined 
+                  : 'hsl(var(--chat-user-bg))'
+              }}
               aria-label={message.isUser ? "Your Message" : "Message from TrailGuide"}
             >
               {message.text}
@@ -167,11 +255,14 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         
         {isLoading && (
           <div className="flex justify-start animate-msg-in">
-            <div className="bg-[#2a2a2a] text-white rounded-[20px] rounded-bl-[8px] px-4 py-3 shadow-lg border border-white/10">
+            <div 
+              className="px-4 py-3 rounded-2xl rounded-bl-md"
+              style={{ backgroundColor: 'hsl(var(--chat-user-bg))' }}
+            >
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-typing-dot" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-imessage-typing" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           </div>
@@ -180,30 +271,29 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Container - iMessage Style */}
-      <div className="p-4 bg-[#1a1a1a] border-t border-white/10">
-        <label htmlFor="chat-input" className="sr-only">Type a message</label>
-        <div className="flex gap-3 items-end">
-          <div className="flex-1 relative">
-            <input
-              id="chat-input"
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="iMessage"
-              aria-placeholder="Type your message here"
-              className="w-full bg-[#2a2a2a] border border-white/20 rounded-full px-4 py-3 text-white text-sm placeholder-gray-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition-all duration-200"
-              disabled={isLoading}
-            />
-          </div>
+      {/* Input */}
+      <div className="p-4 border-t border-default">
+        <div className="flex gap-2 items-end">
+          <label htmlFor="chat-input" className="sr-only">Type a message</label>
+          <input
+            ref={inputRef}
+            id="chat-input"
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Message TrailGuide..."
+            className="flex-1 bg-surface-card border border-default rounded-full px-4 py-2 text-sm text-primary placeholder-muted resize-none focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-all"
+            disabled={isLoading}
+            aria-placeholder="Type your message here"
+          />
           <button
             onClick={handleSendClick}
             disabled={!inputText.trim() || isLoading}
-            className="w-10 h-10 bg-[#007AFF] hover:bg-[#0056CC] disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 shadow-lg"
+            className="bg-accent-primary hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-all duration-150 hover:scale-105 active:scale-95"
             aria-label="Send message"
           >
-            <Send className="w-4 h-4 text-white" />
+            <Send className="w-4 h-4" />
           </button>
         </div>
       </div>
