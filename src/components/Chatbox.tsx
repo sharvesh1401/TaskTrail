@@ -125,87 +125,44 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       // Build API payload
       const payload = buildApiPayload(currentInput);
       
-      // Try Groq API first
-      let aiResponse = null;
-      let usedProvider = null;
-      let success = false;
+      // Call the unified /api/chat endpoint
+      const response = await fetch('/api/chat', { // Updated endpoint
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-      try {
-        console.log('Attempting Groq API call to /api/groq');
-        const groqResponse = await fetch('/api/groq', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!groqResponse.ok) {
-          const errorText = await groqResponse.text();
-          throw new Error(`Groq API error ${groqResponse.status}: ${errorText}`);
-        }
-
-        const data = await groqResponse.json();
-        
-        if (!data.response) {
-          throw new Error('Invalid response format from Groq API');
-        }
-        
-        aiResponse = data.response;
-        usedProvider = 'Groq';
-        success = true;
-        console.log('✅ Groq API successful');
-      } catch (groqError) {
-        console.warn('⚠️ Groq API failed, trying DeepSeek fallback:', groqError.message);
-        
-        // Fallback to DeepSeek
-        try {
-          console.log('Attempting DeepSeek API call to /api/deepseek');
-          const deepseekResponse = await fetch('/api/deepseek', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          if (!deepseekResponse.ok) {
-            const errorText = await deepseekResponse.text();
-            throw new Error(`DeepSeek API error ${deepseekResponse.status}: ${errorText}`);
-          }
-
-          const data = await deepseekResponse.json();
-          
-          if (!data.reply) {
-            throw new Error('Invalid response format from DeepSeek API');
-          }
-          
-          aiResponse = data.reply;
-          usedProvider = 'DeepSeek';
-          success = true;
-          console.log('✅ DeepSeek API successful');
-        } catch (deepseekError) {
-          console.error('❌ Both AI providers failed:', {
-            groqError: groqError.message,
-            deepseekError: deepseekError.message
-          });
-          throw new Error('All AI services are currently unavailable');
-        }
+      if (!response.ok) {
+        // Use the more detailed error message structure as requested
+        const errorText = await response.text();
+        throw new Error(`Chat API ${response.status}: ${errorText}`);
       }
 
-      if (success && aiResponse) {
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: aiResponse,
-          timestamp: new Date(),
-          provider: usedProvider,
-        };
-        setMessages(prev => [...prev, aiMessage]);
+      const data = await response.json(); // Expects { reply: "...", provider: "..." }
+
+      // The prompt specified extracting 'reply'. The new /api/chat returns { reply: "...", provider: "..." }
+      // So, data.reply should be used.
+      if (!data.reply) {
+        console.error("Invalid response format from /api/chat, expected 'reply' field. Data:", data);
+        throw new Error('Invalid response format from chat service. Missing "reply".');
       }
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.reply, // Use data.reply
+        timestamp: new Date(),
+        provider: data.provider, // Provider info from the unified endpoint
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('❌ TrailGuide AI error:', error);
+      console.error('TrailGuide AI error:', error);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: "Sorry, I'm having trouble connecting to TrailGuide. Please try again later.",
+        content: 'Sorry, I couldn\'t connect to TrailGuide right now. Please try again in a moment.',
         timestamp: new Date(),
         isError: true,
       };
