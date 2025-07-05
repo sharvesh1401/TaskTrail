@@ -1,4 +1,4 @@
-export async function handler(req, res) {
+export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -94,20 +94,29 @@ export async function handler(req, res) {
             aiResponse = data.choices[0].message.content;
             usedProvider = 'Groq';
             console.log('Groq API successful');
+          } else {
+            // Log more details if response is not ok
+            const errorBody = await groqResponse.text();
+            console.log(`Groq API request failed with status: ${groqResponse.status} ${groqResponse.statusText}. Response body: ${errorBody}`);
           }
         } else {
-          console.log('Groq API failed:', groqResponse.status, groqResponse.statusText);
+          // This case should ideally not be hit if groqResponse.ok is false, but added for completeness
+          console.log('Groq API response was not ok (unexpected). Status:', groqResponse.status, groqResponse.statusText);
         }
       } catch (error) {
-        console.log('Groq API error:', error.message);
+        console.error('Detailed Groq API fetch/processing error:', error); // Log the full error object
+        console.log('Error name:', error.name);
+        console.log('Error message:', error.message);
+        if (error.cause) console.log('Error cause:', error.cause);
       }
     }
 
     // Fallback to DeepSeek if Groq failed
     if (!aiResponse && deepseekApiKey) {
+      const deepseekApiUrl = 'https://api.deepseek.com/v1/chat/completions';
       try {
-        console.log('Attempting DeepSeek API...');
-        const deepseekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        console.log(`Attempting DeepSeek API call to: ${deepseekApiUrl}`);
+        const deepseekResponse = await fetch(deepseekApiUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${deepseekApiKey}`,
@@ -129,12 +138,19 @@ export async function handler(req, res) {
             aiResponse = data.choices[0].message.content;
             usedProvider = 'DeepSeek';
             console.log('DeepSeek API successful');
+          } else {
+            console.log('DeepSeek API response ok, but data format unexpected:', data);
           }
         } else {
-          console.log('DeepSeek API failed:', deepseekResponse.status, deepseekResponse.statusText);
+           // Log more details if response is not ok
+           const errorBody = await deepseekResponse.text();
+           console.log(`DeepSeek API request failed with status: ${deepseekResponse.status} ${deepseekResponse.statusText}. Response body: ${errorBody}`);
         }
       } catch (error) {
-        console.log('DeepSeek API error:', error.message);
+        console.error('Detailed DeepSeek API fetch/processing error:', error); // Log the full error object
+        console.log('Error name:', error.name);
+        console.log('Error message:', error.message);
+        if (error.cause) console.log('Error cause:', error.cause);
       }
     }
 
@@ -154,3 +170,5 @@ export async function handler(req, res) {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export { handler }

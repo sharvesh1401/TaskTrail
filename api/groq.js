@@ -1,80 +1,108 @@
-// Placeholder for /api/groq endpoint (Node.js example)
-// In a real setup, this would be part of a server framework like Express.js or Next.js/Vercel.
+export default async function handler(req, res) {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-// Simulate reading API key from environment variables
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-// For testing fallback: Simulate failure 50% of the time
-const SIMULATE_FAILURE_RATE = 0.5; // 50% failure rate for Groq
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
 
-// This is a simplified handler. In a real app, use a proper router or framework.
-// This example assumes a context where `req` and `res` are HTTP request/response objects.
-// For Vercel serverless functions, the signature `export default function(req, res)` is common.
-export async function handler(req, res) {
-    if (req.method === 'OPTIONS') { // Handle CORS preflight
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        res.writeHead(200);
-        res.end();
-        return;
+  try {
+    const { systemPrompt, tasksContext, conversation, userMessage } = req.body;
+
+    if (!userMessage) {
+      res.status(400).json({ error: 'User message is required' });
+      return;
     }
 
-    // Set CORS headers for the actual request
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust in production for security
-
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        // Standard Node.js way to send response:
-        res.writeHead(405, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: `Method ${req.method} Not Allowed` }));
-        return;
+    // Get API key from environment
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      console.error('GROQ_API_KEY not found in environment variables');
+      res.status(500).json({ error: 'API configuration error' });
+      return;
     }
 
-    let rawData = '';
-    req.on('data', chunk => {
-        rawData += chunk;
+    // Build messages array for Groq API
+    const messages = [
+      {
+        role: 'system',
+        content: systemPrompt
+      }
+    ];
+
+    // Add task context if provided
+    if (tasksContext && tasksContext.length > 0) {
+      messages.push({
+        role: 'system',
+        content: `Current tasks: ${tasksContext.map(task =>
+          `"${task.title}" (${task.importance} priority, ${task.status}${task.goal ? `, goal: ${task.goal}` : ''})`
+        ).join(', ')}`
+      });
+    }
+
+    // Add conversation history
+    if (conversation && conversation.length > 0) {
+      messages.push(...conversation.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })));
+    }
+
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: userMessage
     });
 
-    req.on('end', () => {
-        try {
-            const payload = JSON.parse(rawData);
-            console.log("/api/groq (placeholder) received payload:", JSON.stringify(payload, null, 2));
-
-            if (!GROQ_API_KEY && !process.env.CI) {
-                console.warn("GROQ_API_KEY is not set in environment variables on the server for /api/groq (placeholder). This is a placeholder, so it will proceed.");
-            }
-
-            // Simulate potential failure for Groq
-            if (Math.random() < SIMULATE_FAILURE_RATE) {
-                console.log("/api/groq (placeholder) simulating a 500 failure.");
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: "Simulated Groq API Error (500) from placeholder" }));
-                return;
-            }
-
-            // Simulate a successful API call to Groq
-            // TODO: When restoring full functionality, replace this with actual Groq API call using GROQ_API_KEY
-            const simulatedReply = `(Groq Placeholder Sim) Hello! You said: "${payload.userMessage.substring(0, 60)}${payload.userMessage.length > 60 ? '...' : ''}"`;
-
-            console.log("/api/groq (placeholder) sending success response.");
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ reply: simulatedReply }));
-
-        } catch (error) {
-            console.error("Error processing /api/groq (placeholder) request:", error.message);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: "Internal Server Error in Groq placeholder handler", details: error.message }));
-        }
+    // Call Groq API
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-70b-versatile',
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 300,
+        top_p: 1,
+        stream: false
+      }),
     });
+
+    if (!groqResponse.ok) {
+      const errorText = await groqResponse.text();
+      console.error('Groq API error:', groqResponse.status, groqResponse.statusText, errorText);
+      res.status(500).json({ error: 'Failed to get AI response' });
+      return;
+    }
+
+    const data = await groqResponse.json();
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid Groq API response format:', data);
+      res.status(500).json({ error: 'Invalid AI response format' });
+      return;
+    }
+
+    const aiResponse = data.choices[0].message.content;
+
+    res.status(200).json({
+      response: aiResponse,
+      usage: data.usage
+    });
+
+  } catch (error) {
+    console.error('Groq API handler error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }
-
-// IMPORTANT for use in Vercel/Next.js:
-// Place this file in the `/pages/api/` directory (for Next.js) or `/api/` directory (for Vercel).
-// The filename `groq.js` will make it accessible at the `/api/groq` route.
-// Ensure your project is configured for ES Modules if using `export default`.
-// If using CommonJS, change to `module.exports = async function handler(req, res) { ... }`.
-// Keys (GROQ_API_KEY) must be set as environment variables in your Vercel project settings.
-// GitHub Secrets are for GitHub Actions (e.g., CI/CD), not directly for runtime Vercel env vars.
-// .env.local (for Next.js) or Vercel dashboard for environment variables.
-// DO NOT COMMIT API KEYS TO YOUR REPOSITORY.
