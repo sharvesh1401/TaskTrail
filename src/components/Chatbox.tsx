@@ -13,6 +13,7 @@ interface Message {
   content: string;
   timestamp: Date;
   isError?: boolean;
+  provider?: string;
 }
 
 export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
@@ -124,8 +125,8 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       // Build API payload
       const payload = buildApiPayload(currentInput);
       
-      // Call the secure API endpoint
-      const response = await fetch('/api/groq', {
+      // Call the new AI chat endpoint with fallback support
+      const response = await fetch('/api/ai-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -138,7 +139,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       const data = await response.json();
       
       if (!data.response) {
-        throw new Error('Invalid response format from API');
+        throw new Error('Invalid response format from AI service');
       }
       
       const aiMessage: Message = {
@@ -146,16 +147,17 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         role: 'assistant',
         content: data.response,
         timestamp: new Date(),
+        provider: data.provider,
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('TrailGuide API error:', error);
+      console.error('TrailGuide AI error:', error);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I couldn\'t reach TrailGuide. Please try again.',
+        content: 'Sorry, I couldn\'t connect to TrailGuide right now. Please try again in a moment.',
         timestamp: new Date(),
         isError: true,
       };
@@ -198,7 +200,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-accent-primary rounded-full flex items-center justify-center">
             <img 
-              src="/src/assets/trailguide-icon.svg" 
+              src="/src/assets/map-icon.svg" 
               alt="TrailGuide" 
               className="w-5 h-5 text-white"
             />
@@ -225,7 +227,7 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         {messages.length === 0 && (
           <div className="text-center text-muted py-8">
             <img 
-              src="/src/assets/trailguide-icon.svg" 
+              src="/src/assets/map-icon.svg" 
               alt="TrailGuide" 
               className="w-12 h-12 mx-auto mb-3 opacity-50"
             />
@@ -257,6 +259,11 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
               aria-label={message.role === 'user' ? "Your Message" : "Message from TrailGuide"}
             >
               {message.content}
+              {message.provider && (
+                <div className="text-xs opacity-50 mt-1">
+                  via {message.provider}
+                </div>
+              )}
             </div>
           </div>
         ))}

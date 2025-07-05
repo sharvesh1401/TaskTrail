@@ -1,0 +1,40 @@
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Map Icon</title>
+  <desc>A map pin icon representing the TrailGuide AI assistant</desc>
+  
+  <!-- Map pin shape -->
+  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" 
+        fill="url(#mapGradient)" 
+        stroke="#FFFFFF" 
+        strokeWidth="2"/>
+  
+  <!-- Inner circle -->
+  <circle cx="12" cy="9" r="3" fill="#FFFFFF"/>
+  
+  <!-- Chat bubble inside -->
+  <path d="M10.5 8h3c.28 0 .5.22.5.5v1c0 .28-.22.5-.5.5H12l-.5.5-.5-.5h-1c-.28 0-.5-.22-.5-.5v-1c0-.28.22-.5.5-.5z" 
+        fill="url(#mapGradient)"/>
+  
+  <!-- Trail path -->
+  <path d="M12 22c0 0-2-1-4-3s-3-4-3-6" 
+        stroke="url(#trailGradient)" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeDasharray="3,2" 
+        opacity="0.6"/>
+  
+  <defs>
+    <!-- Map pin gradient -->
+    <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#8B5CF6"/>
+      <stop offset="50%" stopColor="#A855F7"/>
+      <stop offset="100%" stopColor="#C084FC"/>
+    </linearGradient>
+    
+    <!-- Trail gradient -->
+    <linearGradient id="trailGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#8B5CF6"/>
+      <stop offset="100%" stopColor="#EC4899"/>
+    </linearGradient>
+  </defs>
+</svg>

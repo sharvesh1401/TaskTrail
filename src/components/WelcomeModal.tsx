@@ -27,8 +27,8 @@ export default function WelcomeModal() {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-3">
             <img 
-              src="/src/assets/tasktrail-logo.svg" 
-              alt="TaskTrail Logo" 
+              src="/src/assets/star-logo.svg" 
+              alt="TaskTrail Star Logo" 
               className="w-12 h-12 drop-shadow-lg hover:scale-105 transition-transform duration-150"
             />
           </div>

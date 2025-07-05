@@ -1,11 +1,15 @@
 {
   "functions": {
+    "api/ai-chat.js": {
+      "runtime": "nodejs18.x"
+    },
     "api/groq.js": {
       "runtime": "nodejs18.x"
     }
   },
   "env": {
-    "GROQ_API_KEY": "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"
+    "GROQ_API_KEY": "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",
+    "DEEPSEEK_API_KEY": "sk-744d64e9a996410da9b03c7c79b66d8f"
   },
   "rewrites": [
     {

@@ -1,0 +1,25 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Simple Purple Fire</title>
+  <desc>A clean, minimal purple flame logo</desc>
+  
+  <!-- Main flame shape -->
+  <path
+    d="M16 4C16 4 12 8 12 14C12 18 14 20 16 20C18 20 20 18 20 14C20 8 16 4 16 4Z"
+    fill="#8B5CF6"
+  />
+  
+  <!-- Inner flame -->
+  <path
+    d="M16 8C16 8 14 10 14 13C14 15 15 16 16 16C17 16 18 15 18 13C18 10 16 8 16 8Z"
+    fill="#A855F7"
+  />
+  
+  <!-- Flame tip -->
+  <ellipse
+    cx="16"
+    cy="12"
+    rx="1"
+    ry="2"
+    fill="#C084FC"
+  />
+</svg>

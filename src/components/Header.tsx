@@ -39,8 +39,8 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
           {/* Left: Logo + Title */}
           <div className="flex items-center">
             <img 
-              src="/src/assets/tasktrail-logo.svg" 
-              alt="TaskTrail Logo" 
+              src="/src/assets/star-logo.svg" 
+              alt="TaskTrail Star Logo" 
               className="w-8 h-8 mr-2 drop-shadow-sm hover:scale-105 transition-transform duration-150 ease-in-out"
             />
             <h1 className="text-xl font-semibold text-text-primary">TaskTrail</h1>
@@ -76,8 +76,8 @@ export default function Header({ onSettingsClick, onFilterClick }: HeaderProps) 
       <div className="hidden sm:flex items-center justify-between px-4 h-16">
         <div className="flex items-center">
           <img 
-            src="/src/assets/tasktrail-logo.svg" 
-            alt="TaskTrail Logo" 
+            src="/src/assets/star-logo.svg" 
+            alt="TaskTrail Star Logo" 
             className="w-8 h-8 drop-shadow-sm hover:scale-105 transition-transform duration-150 ease-in-out"
           />
           

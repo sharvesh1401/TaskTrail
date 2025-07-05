@@ -31,8 +31,8 @@ export default function SettingsPanel({ onBack }: SettingsPanelProps) {
         </button>
         <div className="flex items-center gap-2">
           <img 
-            src="/src/assets/tasktrail-logo.svg" 
-            alt="TaskTrail Logo" 
+            src="/src/assets/star-logo.svg" 
+            alt="TaskTrail Star Logo" 
             className="w-6 h-6 drop-shadow-sm"
           />
           <h1 className="text-2xl font-bold">Settings</h1>
