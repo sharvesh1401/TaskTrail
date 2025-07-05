@@ -1,6 +1,17 @@
+import dotenv from "dotenv";
+dotenv.config(); // Load environment variables from .env file
+
+// Define default API endpoint URLs, allowing override via environment variables
+const DEFAULT_GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const DEFAULT_DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+
+const groqServiceUrl = process.env.GROQ_API_ENDPOINT_URL || DEFAULT_GROQ_API_URL;
+const deepseekServiceUrl = process.env.DEEPSEEK_API_ENDPOINT_URL || DEFAULT_DEEPSEEK_API_URL;
+
+
 export default async function handler(req, res) {
   // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Be more specific in production
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
@@ -71,8 +82,8 @@ export default async function handler(req, res) {
     // Attempt Groq API first
     if (groqApiKey) {
       try {
-        console.log('Attempting Groq API...');
-        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        console.log(`Attempting Groq API call to: ${groqServiceUrl}`);
+        const groqResponse = await fetch(groqServiceUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${groqApiKey}`,
@@ -97,26 +108,21 @@ export default async function handler(req, res) {
           } else {
             // Log more details if response is not ok
             const errorBody = await groqResponse.text();
-            console.log(`Groq API request failed with status: ${groqResponse.status} ${groqResponse.statusText}. Response body: ${errorBody}`);
+            console.log(`Groq API request failed: ${groqResponse.status} ${groqResponse.statusText}. Response body: ${errorBody}`);
+            // No explicit throw here, as per original logic, it just means aiResponse remains null
           }
-        } else {
-          // This case should ideally not be hit if groqResponse.ok is false, but added for completeness
-          console.log('Groq API response was not ok (unexpected). Status:', groqResponse.status, groqResponse.statusText);
-        }
+        } // No 'else' needed here as per original logic for non-ok responses
       } catch (error) {
-        console.error('Detailed Groq API fetch/processing error:', error); // Log the full error object
-        console.log('Error name:', error.name);
-        console.log('Error message:', error.message);
-        if (error.cause) console.log('Error cause:', error.cause);
+        console.error("❌ Groq API attempt in /api/ai-chat error:", error);
+        // aiResponse remains null, will fall through to DeepSeek or final error
       }
     }
 
     // Fallback to DeepSeek if Groq failed
     if (!aiResponse && deepseekApiKey) {
-      const deepseekApiUrl = 'https://api.deepseek.com/v1/chat/completions';
       try {
-        console.log(`Attempting DeepSeek API call to: ${deepseekApiUrl}`);
-        const deepseekResponse = await fetch(deepseekApiUrl, {
+        console.log(`Attempting DeepSeek API call to: ${deepseekServiceUrl}`);
+        const deepseekResponse = await fetch(deepseekServiceUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${deepseekApiKey}`,
@@ -144,31 +150,35 @@ export default async function handler(req, res) {
         } else {
            // Log more details if response is not ok
            const errorBody = await deepseekResponse.text();
-           console.log(`DeepSeek API request failed with status: ${deepseekResponse.status} ${deepseekResponse.statusText}. Response body: ${errorBody}`);
+           console.log(`DeepSeek API request failed: ${deepseekResponse.status} ${deepseekResponse.statusText}. Response body: ${errorBody}`);
+           // No explicit throw here, will fall through to final error
         }
       } catch (error) {
-        console.error('Detailed DeepSeek API fetch/processing error:', error); // Log the full error object
-        console.log('Error name:', error.name);
-        console.log('Error message:', error.message);
-        if (error.cause) console.log('Error cause:', error.cause);
+        console.error("❌ DeepSeek API attempt in /api/ai-chat error:", error);
+        // aiResponse remains null, will fall through to final error
       }
     }
 
     if (!aiResponse) {
-      console.error('Both AI providers failed');
-      res.status(500).json({ error: 'AI services temporarily unavailable' });
-      return;
+      console.error('❌ Both AI providers failed or no AI response obtained in /api/ai-chat.');
+      // Ensure a 500 status for the client as per user instruction for this case
+      return res.status(500).json({ error: "Chat service unavailable." });
     }
 
-    res.status(200).json({ 
+    // Success case
+    return res.status(200).json({
       response: aiResponse,
       provider: usedProvider
     });
 
   } catch (error) {
-    console.error('AI Chat handler error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    // General catch-all for unexpected errors in the handler itself
+    console.error('❌ Unexpected error in /api/ai-chat handler:', error);
+    return res.status(500).json({ error: "Chat service encountered an internal error." });
   }
 }
 
-export { handler }
+// export { handler } // Original export, ensure this is correct for your server setup
+// If this is a Vercel-like serverless function, 'export default async function handler...' is enough.
+// If it's part of an Express app, this export might be used differently.
+// For now, assuming the default export is the primary way it's invoked.
