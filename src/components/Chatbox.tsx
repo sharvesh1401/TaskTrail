@@ -141,23 +141,32 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
         body: JSON.stringify(payloadForApi), // Send the structured payload
       });
 
-      const json = await res.json(); // Always try to parse JSON, even for errors, as it might contain error details
+      const text = await res.text();
+      let json: any; // Allow 'any' for json object that might be empty or have varied error structure
+      try {
+        json = text ? JSON.parse(text) : {}; // Ensure text is not empty before parsing
+      } catch (parseErr) {
+        console.error("Failed to parse JSON response:", parseErr, "Raw response text:", text);
+        // Default to an object that will likely trigger the error path below,
+        // or ensure json.error can be populated from the raw text if it's a simple string error.
+        json = { error: `Failed to parse server response. Raw text: ${text.substring(0, 100)}...` };
+      }
 
-      if (res.ok) {
-        if (!json.reply) { // Check if reply field exists on successful response
-            console.error("TrailGuide AI error: Reply field missing in successful response.", json);
-            throw new Error("AI response format error: No reply content.");
-        }
+      if (res.ok && json.reply) {
         appendMessage({ role: "assistant", content: json.reply, provider: json.provider });
       } else {
-        // Use error from JSON if available, otherwise use a generic message
-        console.error(`Chat API Error: ${res.status}`, json);
-        throw new Error(json.error || `Chat API ${res.status}`);
+        // Prioritize error message from parsed JSON, then fallback.
+        const errMsg = json.error || (res.ok ? "Received OK but no valid reply content." : `Chat API Error: ${res.status} - ${text.substring(0,100)}...`);
+        console.error("TrailGuide AI error:", errMsg, "Raw text (if different from errMsg):", text);
+        appendMessage({
+          role: "assistant",
+          content: errMsg || "Sorry, TrailGuide is unavailable right now.", // Fallback error message
+          isError: true // Mark this message as an error for styling
+        });
       }
-    } catch (err) {
-      // Ensure err is an Error object to access err.message
-      const errorMessageContent = err instanceof Error ? err.message : "An unknown error occurred.";
-      console.error("TrailGuide AI error:", errorMessageContent, err); // Log the full error object too
+    } catch (err) { // This catch is now primarily for network errors or issues before res.text()
+      const errorMessageContent = err instanceof Error ? err.message : "A network or unknown error occurred.";
+      console.error("TrailGuide AI fetch/network error:", errorMessageContent, err);
       appendMessage({ role: "assistant", content: "Sorry, AI is unavailable right now.", isError: true });
     } finally {
       setIsLoading(false);

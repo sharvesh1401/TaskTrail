@@ -156,8 +156,11 @@ export default async function handler(
   const deepseekApiUrl = process.env.DEEPSEEK_API_URL;
   const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
 
+  let groqErrorMessage: string | null = null; // To store Groq error message if it occurs
+
   if (!groqApiUrl || !groqApiKey) {
     console.error("❌ Groq API URL or Key is not configured in environment variables.");
+    groqErrorMessage = "Groq API not configured.";
     // Fallback directly if primary is not configured
   } else {
     try {
@@ -169,17 +172,22 @@ export default async function handler(
         payload // Pass the original payload from Chatbox.tsx
       );
       console.log("Groq service successful.");
-      // The handler expects to send { reply: actual_message_content }
       return res.status(200).json({ reply: groqResponseObj.reply, provider: "Groq" });
-    } catch (groqErr) {
+    } catch (err) {
+      const groqErr = err as Error; // Type assertion
       console.warn("⚠️ Groq failed:", groqErr.message);
-      // Fall through to DeepSeek
+      groqErrorMessage = groqErr.message; // Store Groq error message
+      // Fall through to DeepSeek.
     }
   }
 
   // Fallback: DeepSeek
   if (!deepseekApiUrl || !deepseekApiKey) {
-    console.error("❌ DeepSeek API URL or Key is not configured. Both providers unavailable.");
+    console.error("❌ DeepSeek API URL or Key is not configured. Cannot fallback.");
+    // Log both reasons if Groq also had an issue
+    if (groqErrorMessage) {
+        console.error(`Original Groq issue: ${groqErrorMessage}`);
+    }
     return res.status(502).json({ error: "All AI services are currently unavailable (config error)." });
   }
 
@@ -191,15 +199,32 @@ export default async function handler(
       payload // Pass the original payload from Chatbox.tsx
     );
     console.log("DeepSeek service successful (fallback).");
+    // The prompt is: res.status(200).json({ reply: ds.reply ?? ds });
+    // My proxyToService returns an object like { reply: "content", providerResponse: ... }
     return res.status(200).json({ reply: dsResponseObj.reply, provider: "DeepSeek" });
   } catch (dsErr) {
-    console.error("❌ Both AI providers failed (DeepSeek also failed):", {
-      // groqError: groqErr ? groqErr.message : "Groq not attempted or pre-config error", // groqErr might be out of scope here
-      deepseekError: dsErr.message,
-    });
-    // Log the full error objects for more detail
-    // if (groqErr) console.error("Groq Full Error (if occurred):", groqErr);
-    console.error("DeepSeek Full Error:", dsErr);
+    // This dsErr is from proxyToService if it threw an error during the DeepSeek attempt.
+    // groqErr is not directly in scope here but its message was logged if it occurred.
+    // For the final error, we need to access the original groqErr if it happened.
+    // This requires restructuring slightly or passing groqErr's message.
+    // For simplicity and following the prompt's final error structure,
+    // we'll log the messages we have.
+
+    // To include groqErr.message in the final log as per prompt, it must be available.
+    // Let's assume groqErr from the previous catch block is accessible or its message is stored.
+    // However, standard try-catch scoping won't make groqErr available here.
+    // The prompt shows: console.error("❌ Both AI providers failed:", { groq: groqErr.message, deepseek: dsErr.message });
+    // This implies groqErr should be accessible. Let's declare it outside.
+
+    // Re-evaluating based on current structure: groqErr is out of scope.
+    // The console.warn for Groq failure already logged groqErrorMessage if it occurred.
+    console.error("❌ Both AI providers failed:", {
+        groq: groqErrorMessage || "Groq not attempted or succeeded but error in DeepSeek path (should not happen).", // Provide stored Groq error
+        deepseek: dsErr.message,
+      });
+    console.error("DeepSeek Full Error Object (if DeepSeek was attempted):", dsErr);
+
+    // Ensure the final response is always JSON as per user request.
     return res.status(502).json({ error: "All AI services are unavailable." });
   }
 }
