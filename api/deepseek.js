@@ -1,69 +1,119 @@
-// Placeholder for /api/deepseek endpoint (Node.js example)
-// In a real setup, this would be part of a server framework like Express.js or Next.js/Vercel.
+import dotenv from "dotenv";
+dotenv.config();
 
-// Simulate reading API key from environment variables
-const DEEPSEEK_API_KEY = process.env.DEESEEK_API_KEY; // Note: DEESEEK_API_KEY from original request
+export async function handler(req, res) {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.status(200).end();
+    return;
+  }
 
-export default async function handler(req, res) {
-    if (req.method === 'OPTIONS') { // Handle CORS preflight
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        res.writeHead(200);
-        res.end();
-        return;
+  // Set CORS headers for the actual request
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+    return;
+  }
+
+  try {
+    const { systemPrompt, tasksContext, conversation, userMessage } = req.body;
+
+    if (!userMessage) {
+      res.status(400).json({ error: 'User message is required' });
+      return;
     }
 
-    // Set CORS headers for the actual request
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust in production
-
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        res.writeHead(405, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: `Method ${req.method} Not Allowed` }));
-        return;
+    // Get API configuration from environment
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    const apiUrl = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/v1/chat/completions';
+    
+    if (!apiKey) {
+      console.error('❌ DEEPSEEK_API_KEY not found in environment variables');
+      res.status(500).json({ error: 'API configuration error' });
+      return;
     }
 
-    let rawData = '';
-    req.on('data', chunk => {
-        rawData += chunk;
+    // Build messages array for DeepSeek API
+    const messages = [
+      {
+        role: 'system',
+        content: systemPrompt
+      }
+    ];
+
+    // Add task context if provided
+    if (tasksContext && tasksContext.length > 0) {
+      messages.push({
+        role: 'system',
+        content: `Current tasks: ${tasksContext.map(task =>
+          `"${task.title}" (${task.importance} priority, ${task.status}${task.goal ? `, goal: ${task.goal}` : ''})`
+        ).join(', ')}`
+      });
+    }
+
+    // Add conversation history
+    if (conversation && conversation.length > 0) {
+      messages.push(...conversation.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })));
+    }
+
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: userMessage
     });
 
-    req.on('end', () => {
-        try {
-            const payload = JSON.parse(rawData);
-            console.log("/api/deepseek (placeholder) received payload:", JSON.stringify(payload, null, 2));
+    console.log(`🚀 Calling DeepSeek API at: ${apiUrl}`);
 
-            if (!DEEPSEEK_API_KEY && !process.env.CI) {
-                console.warn("DEESEEK_API_KEY is not set in environment variables on the server for /api/deepseek (placeholder). This is a placeholder, so it will proceed.");
-                // Depending on policy, you might want to fail the request if the key is missing.
-            }
-
-            // Simulate a successful API call to DeepSeek
-            // TODO: Replace this with actual DeepSeek API call using DEEPSEEK_API_KEY
-            // Example:
-            // const deepseekApiResponse = await makeActualDeepSeekApiCall(payload, DEEPSEEK_API_KEY);
-            // const aiReply = deepseekApiResponse.choices[0]?.message?.content;
-            // if (!aiReply) throw new Error("No reply content from DeepSeek");
-
-            const simulatedReply = `(DeepSeek Sim) Understood! You mentioned: "${payload.userMessage.substring(0, 60)}${payload.userMessage.length > 60 ? '...' : ''}" (fallback)`;
-
-            console.log("/api/deepseek (placeholder) sending success response.");
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ reply: simulatedReply }));
-
-        } catch (error) {
-            console.error("Error processing /api/deepseek (placeholder) request:", error.message);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: "Internal Server Error in DeepSeek placeholder handler", details: error.message }));
-        }
+    // Call DeepSeek API
+    const deepseekResponse = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 300,
+        top_p: 1,
+        stream: false
+      }),
     });
+
+    if (!deepseekResponse.ok) {
+      const errorText = await deepseekResponse.text();
+      console.error('❌ DeepSeek API error:', deepseekResponse.status, deepseekResponse.statusText, errorText);
+      res.status(500).json({ error: 'Failed to get AI response' });
+      return;
+    }
+
+    const data = await deepseekResponse.json();
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('❌ Invalid DeepSeek API response format:', data);
+      res.status(500).json({ error: 'Invalid AI response format' });
+      return;
+    }
+
+    const aiResponse = data.choices[0].message.content;
+    console.log('✅ DeepSeek API successful');
+
+    res.status(200).json({
+      reply: aiResponse,
+      usage: data.usage
+    });
+
+  } catch (error) {
+    console.error('❌ DeepSeek API handler error:', error);
+    res.status(500).json({ error: 'AI service unavailable.' });
+  }
 }
-
-// IMPORTANT for use in Vercel/Next.js:
-// Place this file in the `/pages/api/` directory (for Next.js) or `/api/` directory (for Vercel).
-// The filename `deepseek.js` will make it accessible at the `/api/deepseek` route.
-// Ensure your project is configured for ES Modules if using `export default`.
-// If using CommonJS, change to `module.exports = async function handler(req, res) { ... }`.
-// Keys (DEESEEK_API_KEY) must be set as environment variables.
-// DO NOT COMMIT API KEYS TO YOUR REPOSITORY.

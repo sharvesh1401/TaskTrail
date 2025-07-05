@@ -1,4 +1,7 @@
-export default async function handler(req, res) {
+import dotenv from "dotenv";
+dotenv.config();
+
+export async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -22,10 +25,12 @@ export default async function handler(req, res) {
       return;
     }
 
-    // Get API key from environment
+    // Get API configuration from environment
     const apiKey = process.env.GROQ_API_KEY;
+    const apiUrl = process.env.GROQ_API_URL || 'https://api.groq.com/openai/v1/chat/completions';
+    
     if (!apiKey) {
-      console.error('GROQ_API_KEY not found in environment variables');
+      console.error('❌ GROQ_API_KEY not found in environment variables');
       res.status(500).json({ error: 'API configuration error' });
       return;
     }
@@ -62,8 +67,10 @@ export default async function handler(req, res) {
       content: userMessage
     });
 
+    console.log(`🚀 Calling Groq API at: ${apiUrl}`);
+
     // Call Groq API
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const groqResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -81,7 +88,7 @@ export default async function handler(req, res) {
 
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
-      console.error('Groq API error:', groqResponse.status, groqResponse.statusText, errorText);
+      console.error('❌ Groq API error:', groqResponse.status, groqResponse.statusText, errorText);
       res.status(500).json({ error: 'Failed to get AI response' });
       return;
     }
@@ -89,12 +96,13 @@ export default async function handler(req, res) {
     const data = await groqResponse.json();
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid Groq API response format:', data);
+      console.error('❌ Invalid Groq API response format:', data);
       res.status(500).json({ error: 'Invalid AI response format' });
       return;
     }
 
     const aiResponse = data.choices[0].message.content;
+    console.log('✅ Groq API successful');
 
     res.status(200).json({
       response: aiResponse,
@@ -102,7 +110,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Groq API handler error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Groq API handler error:', error);
+    res.status(500).json({ error: 'AI service unavailable.' });
   }
 }
