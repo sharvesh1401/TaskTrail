@@ -130,6 +130,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log("📡 Received chat request:", req.method, req.url); // Health-check log
+
   // Add CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*'); // Be more specific in production
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
