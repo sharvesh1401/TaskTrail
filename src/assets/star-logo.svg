@@ -1,0 +1,22 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>TaskTrail Star Logo</title>
+  <desc>A simple purple star logo for TaskTrail</desc>
+  
+  <!-- Main star shape -->
+  <path
+    d="M16 2L20.472 10.944L30 12.472L22.944 19.528L24.472 30L16 25.528L7.528 30L9.056 19.528L2 12.472L11.528 10.944L16 2Z"
+    fill="url(#starGradient)"
+    stroke="#7C3AED"
+    stroke-width="1"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C084FC;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
