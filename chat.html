@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrailGuide Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="chatbox-container">
+        <div id="chatbox-header">TrailGuide</div>
+        <div id="message-list" aria-live="polite" role="log" aria-relevant="additions">
+            <!-- Messages will be appended here by JavaScript -->
+        </div>
+        <div id="typing-indicator" class="assistant-message" style="display: none;">
+             <div class="bubble">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask TrailGuide anything…" aria-label="Chat input">
+            <button id="send-button" aria-label="Send message">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- This is a placeholder for tasks data. In a real app, this would come from your app's state management. -->
+    <script>
+        // Placeholder for currentTasks data
+        // In a real application, this would be dynamically populated from your application's state
+        let currentTasks = [
+            { id: "1", title: "Book flight to SFO", goal: "Attend conference", importanceLevel: "High", completed: false },
+            { id: "2", title: "Draft project proposal", goal: "Secure funding", importanceLevel: "High", completed: false },
+            { id: "3", title: "Grocery Shopping", goal: "Weekly groceries", importanceLevel: "Medium", completed: true },
+            { id: "4", title: "Schedule dentist appointment", goal: "Dental check-up", importanceLevel: "Low", completed: false }
+        ];
+        // messages will be used by script.js to store chat history.
+        // It's defined here so script.js can access it directly.
+        let messages = [];
+        // isFirstApiCall will be used by script.js to determine if the system prompt needs to be sent.
+        let isFirstApiCall = true;
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
