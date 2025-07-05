@@ -120,61 +120,51 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
     const currentInput = inputText;
     setInputText('');
     setIsLoading(true);
+    // const currentInput = inputText; // Already captured before setInputText('')
+
+    // Helper to append messages, similar to what user's example implies
+    const appendMessage = (message: Omit<Message, 'id' | 'timestamp'>) => {
+      setMessages(prev => [...prev, { ...message, id: Date.now().toString() + Math.random(), timestamp: new Date() }]);
+    };
+
+    // The user's example for sendMessage constructs the payload directly.
+    // Our existing `buildApiPayload` is more sophisticated and should be used.
+    // `SYSTEM_PROMPT` in the user's example would be part of this payload.
+    // `tasksContext` and `conversation` (from `messages` state) are also handled by `buildApiPayload`.
+
+    const payloadForApi = buildApiPayload(currentInput); // Use existing payload builder
 
     try {
-      // Build API payload
-      const payload = buildApiPayload(currentInput);
-      
-      // Call the unified /api/chat endpoint
-      const response = await fetch('/api/chat', { // Updated endpoint
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadForApi), // Send the structured payload
       });
 
-      if (!response.ok) {
-        // Use the more detailed error message structure as requested
-        const errorText = await response.text();
-        throw new Error(`Chat API ${response.status}: ${errorText}`);
+      const json = await res.json(); // Always try to parse JSON, even for errors, as it might contain error details
+
+      if (res.ok) {
+        if (!json.reply) { // Check if reply field exists on successful response
+            console.error("TrailGuide AI error: Reply field missing in successful response.", json);
+            throw new Error("AI response format error: No reply content.");
+        }
+        appendMessage({ role: "assistant", content: json.reply, provider: json.provider });
+      } else {
+        // Use error from JSON if available, otherwise use a generic message
+        console.error(`Chat API Error: ${res.status}`, json);
+        throw new Error(json.error || `Chat API ${res.status}`);
       }
-
-      const data = await response.json(); // Expects { reply: "...", provider: "..." }
-
-      // The prompt specified extracting 'reply'. The new /api/chat returns { reply: "...", provider: "..." }
-      // So, data.reply should be used.
-      if (!data.reply) {
-        console.error("Invalid response format from /api/chat, expected 'reply' field. Data:", data);
-        throw new Error('Invalid response format from chat service. Missing "reply".');
-      }
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.reply, // Use data.reply
-        timestamp: new Date(),
-        provider: data.provider, // Provider info from the unified endpoint
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      console.error('TrailGuide AI error:', error);
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'Sorry, I couldn\'t connect to TrailGuide right now. Please try again in a moment.',
-        timestamp: new Date(),
-        isError: true,
-      };
-      setMessages(prev => [...prev, errorMessage]);
+    } catch (err) {
+      // Ensure err is an Error object to access err.message
+      const errorMessageContent = err instanceof Error ? err.message : "An unknown error occurred.";
+      console.error("TrailGuide AI error:", errorMessageContent, err); // Log the full error object too
+      appendMessage({ role: "assistant", content: "Sorry, AI is unavailable right now.", isError: true });
     } finally {
       setIsLoading(false);
-      // Re-focus input for continuous conversation
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
+      // Re-focus input, ensuring inputRef.current exists (it should if chatbox is open)
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
   };
 
