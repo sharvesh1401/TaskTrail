@@ -10,7 +10,7 @@ const SIMULATE_FAILURE_RATE = 0.5; // 50% failure rate for Groq
 // This is a simplified handler. In a real app, use a proper router or framework.
 // This example assumes a context where `req` and `res` are HTTP request/response objects.
 // For Vercel serverless functions, the signature `export default function(req, res)` is common.
-export default async function handler(req, res) {
+export async function handler(req, res) {
     if (req.method === 'OPTIONS') { // Handle CORS preflight
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
