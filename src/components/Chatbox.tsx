@@ -125,29 +125,34 @@ export default function Chatbox({ isOpen, onClose }: ChatboxProps) {
       // Build API payload
       const payload = buildApiPayload(currentInput);
       
-      // Call the new AI chat endpoint with fallback support
-      const response = await fetch('/api/ai-chat', {
+      // Call the unified /api/chat endpoint
+      const response = await fetch('/api/chat', { // Updated endpoint
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        // Use the more detailed error message structure as requested
+        const errorText = await response.text();
+        throw new Error(`Chat API ${response.status}: ${errorText}`);
       }
 
-      const data = await response.json();
-      
-      if (!data.response) {
-        throw new Error('Invalid response format from AI service');
+      const data = await response.json(); // Expects { reply: "...", provider: "..." }
+
+      // The prompt specified extracting 'reply'. The new /api/chat returns { reply: "...", provider: "..." }
+      // So, data.reply should be used.
+      if (!data.reply) {
+        console.error("Invalid response format from /api/chat, expected 'reply' field. Data:", data);
+        throw new Error('Invalid response format from chat service. Missing "reply".');
       }
-      
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response,
+        content: data.reply, // Use data.reply
         timestamp: new Date(),
-        provider: data.provider,
+        provider: data.provider, // Provider info from the unified endpoint
       };
 
       setMessages(prev => [...prev, aiMessage]);

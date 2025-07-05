@@ -1,0 +1,253 @@
+:root {
+    --bg-panel: #1F204A;
+    --accent-primary: #007bff; /* TrailGuide bubble */
+    --chat-user-bg: #4A4A6A;   /* User bubble */
+    --text-color: #FFFFFF;
+    --input-bg: #2A2B58;
+    --border-color: #303163;
+    --placeholder-text: #8A8AA3;
+    --send-button-bg: var(--accent-primary);
+    --send-button-hover-bg: #0056b3;
+    --error-bg: #ff4d4d;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #12122E;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center; /* Center for desktop, overridden by chatbox fixed pos */
+    align-items: flex-end; /* Align to bottom for desktop */
+    min-height: calc(100vh - 40px); /* Full viewport height minus padding */
+    box-sizing: border-box;
+}
+
+#chatbox-container {
+    width: 380px;
+    height: 550px;
+    background-color: var(--bg-panel);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: fixed; /* Default desktop position */
+    bottom: 20px;
+    left: 20px;
+}
+
+#chatbox-header {
+    padding: 12px 16px;
+    font-weight: bold;
+    color: var(--text-color);
+    background-color: rgba(0,0,0,0.1); /* Slightly darker header */
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+#message-list {
+    flex-grow: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message {
+    display: flex;
+    max-width: 85%;
+    word-wrap: break-word;
+}
+
+.message .bubble {
+    padding: 10px 14px;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+.user-message {
+    align-self: flex-end;
+}
+
+.user-message .bubble {
+    background-color: var(--chat-user-bg);
+    border-radius: 16px 16px 4px 16px; /* TL TR BR BL */
+}
+
+.assistant-message {
+    align-self: flex-start;
+}
+
+.assistant-message .bubble {
+    background-color: var(--accent-primary);
+    border-radius: 16px 16px 16px 4px; /* TL TR BR BL */
+}
+
+.error-message .bubble {
+    background-color: var(--error-bg);
+    border-radius: 16px;
+    width: 100%;
+    text-align: center;
+}
+
+
+#chat-input-area {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-panel); /* Ensure it matches container */
+}
+
+#chat-input {
+    flex-grow: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-right: 8px;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+#chat-input::placeholder {
+    color: var(--placeholder-text);
+}
+
+#send-button {
+    background-color: var(--send-button-bg);
+    color: white;
+    border: none;
+    border-radius: 50%; /* Make it circular */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#send-button:hover {
+    background-color: var(--send-button-hover-bg);
+}
+
+#send-button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+#send-button svg {
+    width: 20px; /* Adjust icon size */
+    height: 20px;
+    margin-left: 2px; /* Slight adjustment for visual centering */
+}
+
+
+/* Typing Indicator */
+#typing-indicator {
+    padding: 0px 16px 10px 16px; /* Align with message padding */
+    align-self: flex-start; /* Same as assistant message */
+}
+
+#typing-indicator .bubble {
+    background-color: var(--accent-primary);
+    border-radius: 16px 16px 16px 4px;
+    display: inline-flex; /* Align dots horizontally */
+    align-items: center;
+    padding: 10px 12px; /* Consistent padding */
+}
+
+#typing-indicator .dot {
+    width: 8px;
+    height: 8px;
+    margin: 0 2px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    animation: typing-bounce 1.2s infinite ease-in-out;
+}
+
+#typing-indicator .dot:nth-child(1) { animation-delay: -0.30s; }
+#typing-indicator .dot:nth-child(2) { animation-delay: -0.15s; }
+#typing-indicator .dot:nth-child(3) { animation-delay: 0s;    }
+
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+
+
+/* Animations */
+@keyframes slide-up-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-msg-in {
+    animation: slide-up-fade-in 250ms cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+@keyframes scale-fade-pop {
+    0% {
+        opacity: 0.5;
+        transform: scale(0.95);
+    }
+    80% {
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-user-pop {
+    animation: scale-fade-pop 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* Responsive Behavior for Mobile */
+@media (max-width: 640px) {
+    body {
+        padding: 0; /* Remove body padding on mobile */
+        /* display: flex and align-items: flex-end are still useful */
+    }
+
+    #chatbox-container {
+        width: calc(100% - 32px); /* Adjusted from 48px to 32px for less extreme padding */
+        height: 75vh; /* Adjusted from 50vh to allow more content visibility */
+        max-height: 600px; /* Add a max height for very tall screens */
+        position: fixed;
+        bottom: 16px; /* Centered with 16px margin from screen edges */
+        left: 16px;
+        right: 16px;
+        margin-left: auto;
+        margin-right: auto;
+        /* Remove fixed left positioning to allow centering */
+    }
+
+    #message-list {
+        padding: 12px; /* Slightly reduce padding on mobile */
+    }
+
+    #chat-input-area {
+        padding: 8px;
+    }
+
+    #chat-input {
+        font-size: 0.95rem; /* Slightly smaller font on mobile */
+    }
+}
